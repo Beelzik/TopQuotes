@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">TopQuotes</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_example">Example action</string>
+    <string name="action_settings">Settings</string>
+    <string-array name="navigation_drawer_const_item">
+        <item >&gt;&gt;&gt; Quote stream</item>
+        <item >&gt;&gt;&gt;	Quiz</item>
+        <item >&gt;&gt;&gt; Top favorites</item>
+    </string-array>
+    <string name="progress_dialog_title">Connection</string>
+  	<string name="progress_dialog_msg">Quotes loading</string>
+  	<string name="frag_quiz_lb_score">Score:</string>
+  	<string name="frag_quiz_score_default">0</string>
+  	<string name="frag_quiz_lb_lives">"Lives: "</string>
+  	<string-array name="check_languages">
+  	    <item >Russian</item>
+  		<item >English</item>
+  	</string-array>
+  		<string name="action_add_quote">Add new quote</string>
+  		<string name="add_quote_lb_title">Title name*:</string>
+  		<string name="add_quote_ed_title_hint">Enter full title name</string>
+  		<string name="add_quote_lb_text">Quote text*:</string>
+  		<string name="add_quote_ed_text_hint">Enter quote with author\'s name</string>
+  		<string name="add_quote_lb_num_season">Number of the season:</string>
+  		<string name="add_quote_lb_num_series">Number of the series:</string>
+  		<string name="add_quote_lb_language">Language of the quote</string>
+  		<string name="add_quote_btn">Add new quote</string>
+  		
+  		<string name="add_quote_dlg_conf_title">Confirm</string>
+  		<string name="add_quote_dlg_conf_msg">Are you sure?</string>
+  		<string name="add_quote_dlg_conf_btn_cancel">No, cancel</string>
+  		<string name="add_quote_dlg_conf_btn_ok">Yes, add quote</string>
+  		
+  		<string name="add_quote_dlg_thanks_title">Thanks for you quote :)</string>
+  		<string name="add_quote_dlg_thanks_msg">This quote are added in our database, you will see it in quote stream after moderate. Want to add one more? </string>
+  		<string name="add_quote_dlg_thanks_btn_cancel">No</string>
+  		<string name="add_quote_dlg_thanks_btn_ok">Yes, add one more</string>
+  		
+  		<string name="add_quote_dlg_conf_fail_input">Field of the title name and quote must be filled</string>
+  		
+  		<string name="list_stream_lb_num_season">"Seasone: "</string>
+</resources>

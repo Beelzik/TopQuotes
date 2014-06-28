@@ -18,6 +18,8 @@ import com.beelzik.topquotes.GlobConst;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.Parse;
+import com.parse.ParseACL;
+import com.parse.ParseAnonymousUtils;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -44,8 +46,8 @@ public class ParseQuoteDataManager {
 	private final static int PARSE_THREAD_POOL=10;
 	
 	private final static int MAX_PARSE_QUERY_LIMIT=1000;
-	
-	
+	private final static String PIN_TOP_QUTE="Top_quote";
+	private final static String PIN_TITLE_NAME="Title_name";
 	
 	Context context;
 	ConnectivityManager conMng;
@@ -149,19 +151,36 @@ public class ParseQuoteDataManager {
 			
 			@Override
 			public void run() {
+				String pinTag;
 				ParseQuery<ParseObject> query=new ParseQuery<ParseObject>(TABLE_QUOTE_NAME);
 				query.whereEqualTo(COLUMN_QUOTE_LANGUAGE, langFlag);
 				query.setLimit(MAX_PARSE_QUERY_LIMIT);
 				if(titleName!=null){
 					query.whereEqualTo(COLUMN_QUOTE_SERIAL_NAME, titleName);
 				}
+				
+				
+				if(titleName==null){
+					if(GlobConst.DEBUG){
+						Log.d(GlobConst.LOG_TAG, "titleName.equals(null)");
+					}
+					pinTag=PIN_TOP_QUTE+langFlag;
+				}else{
+					pinTag=titleName+langFlag;
+				}
 				if (!haveNetCon) {
-					query.fromLocalDatastore();
+				//	query.fromLocalDatastore();
+					query.fromPin(PIN_TOP_QUTE+langFlag);
+					Log.d(GlobConst.LOG_TAG, "!haveNetCon query.fromPin: "+pinTag);
 				}
 				try {
 					List<ParseObject> inTitlesList=query.find();
+					
+					if (haveNetCon && (titleName==null)) {
+						pinToLocaleDataStore(inTitlesList, PIN_TOP_QUTE+langFlag);
+					}
 					ArrayList<QuotesData> outQuotesList= new ArrayList<QuotesData>();
-	
+					
 					QuotesData quotesData;
 					for (ParseObject parseObject : inTitlesList) {
 						String quote=parseObject.getString(COLUMN_QUOTE_QUOTE);
@@ -174,6 +193,9 @@ public class ParseQuoteDataManager {
 								numSeason, numSeries, userWut, numLanguage);
 						outQuotesList.add(quotesData);
 					}
+					
+					Log.d(GlobConst.LOG_TAG, " inTitlesList.size(): "+ inTitlesList.size());
+					
 					Message msg=new Message();
 					msg.what=FindQuotesCallback.FIND_RESULT_OK;
 					msg.obj=outQuotesList;
@@ -184,7 +206,7 @@ public class ParseQuoteDataManager {
 				}
 			}
 		});
-		
+		thread.setDaemon(true);
 		thread.start();
 		//executorService.execute(thread);
 	}
@@ -194,7 +216,7 @@ public class ParseQuoteDataManager {
 	}
 	
 	
-	public void findAllTitleName(int langFlag, final FindTitlesNameCallback callback){
+	public void findAllTitleName(final int langFlag, final FindTitlesNameCallback callback){
 		 final Handler handler=new Handler(){
 				@Override
 				public void handleMessage(Message msg) {
@@ -222,21 +244,33 @@ public class ParseQuoteDataManager {
 				
 				@Override
 				public void run() {
+					String pinTag=PIN_TITLE_NAME+langFlag;
 					ParseQuery<ParseObject> query=new ParseQuery<ParseObject>(TABLE_TITLES_NAME);
 					query.setLimit(MAX_PARSE_QUERY_LIMIT);
+					
+					
+					
 					if (!haveNetCon) {
-						query.fromLocalDatastore();
+						//query.fromLocalDatastore();
+						query.fromPin(PIN_TITLE_NAME);
 					}
 				
 					try {
 						List<ParseObject> inTitlesList=query.find();
 						ArrayList<String> outTitleNameList= new ArrayList<String>();
-		
+						
+						if (haveNetCon) {
+							pinToLocaleDataStore(inTitlesList, PIN_TITLE_NAME);
+						}
+						
 						String titleName;
 						for (ParseObject parseObject : inTitlesList) {
 							titleName=parseObject.getString(COLUMN_TITLE_NAME);
 							outTitleNameList.add(titleName);
 						}
+						
+						Log.d(GlobConst.LOG_TAG, " inTitlesList.size(): "+ inTitlesList.size());
+						
 						Message msg=new Message();
 						msg.what=FindQuotesCallback.FIND_RESULT_OK;
 						msg.obj=outTitleNameList;
@@ -248,6 +282,7 @@ public class ParseQuoteDataManager {
 				}
 			});
 			
+			thread.setDaemon(true);
 			thread.start();
 		//	executorService.execute(thread);
 	}
@@ -266,114 +301,42 @@ public class ParseQuoteDataManager {
 		 }
 	}
 	
-	public void syncLocaleDataWithParse(){
+	
+	
+	public void pinToLocaleDataStore(final List<ParseObject> objects, final String tag){
 		
-		if(checkNetConection()){
+		Log.d(GlobConst.LOG_TAG, "pinToLocaleDataStore");
+		
+		Log.d(GlobConst.LOG_TAG, "objects.size(): "+objects.size());
+		
+		
+		ParseObject.unpinAllInBackground(tag,new DeleteCallback() {
 			
-			ParseQuery<ParseObject> quoteQuery=new ParseQuery<ParseObject>(TABLE_QUOTE_NAME);
-			quoteQuery.setLimit(MAX_PARSE_QUERY_LIMIT);
-			quoteQuery.findInBackground(new FindCallback<ParseObject>() {
+			@Override
+			public void done(ParseException e) {
 				
-				@Override
-				public void done(final List<ParseObject> parseObjs, ParseException e) {
-					if(e==null){
-						ParseObject.unpinAllInBackground(TABLE_QUOTE_NAME, new DeleteCallback() {
-							
-							@Override
-							public void done(ParseException e) {
-								if(e==null){
-									ParseObject.pinAllInBackground(TABLE_QUOTE_NAME,parseObjs);
-									for (ParseObject parseObject : parseObjs) {
-										Log.d(GlobConst.LOG_TAG,"author: "+parseObject.getString(COLUMN_QUOTE_USER));
-									}
-									Log.d(GlobConst.LOG_TAG,"obj.size: "+parseObjs.size());
-								}else{
-									Log.d(GlobConst.LOG_TAG,"quote unpin error: "+e.getMessage());
-								}
-							}
-						});
-					}else{
-						Log.d(GlobConst.LOG_TAG,"quote find error: "+e.getMessage());
-					}
+				if(e==null){
+				ParseObject.pinAllInBackground(tag, objects, new SaveCallback() {
 					
-				}
-			});
-			
-			ParseQuery<ParseObject> titleQuery=new ParseQuery<ParseObject>(TABLE_TITLES_NAME);
-			titleQuery.setLimit(MAX_PARSE_QUERY_LIMIT);
-			titleQuery.findInBackground(new FindCallback<ParseObject>() {
-				
-				@Override
-				public void done(final List<ParseObject> parseObjs, ParseException e) {
-					if(e==null){
-						ParseObject.unpinAllInBackground(TABLE_TITLES_NAME, new DeleteCallback() {
-							
-							@Override
-							public void done(ParseException e) {
-								if(e==null){
-									ParseObject.pinAllInBackground(TABLE_TITLES_NAME,parseObjs);
-									for (ParseObject parseObject : parseObjs) {
-										Log.d(GlobConst.LOG_TAG,"title: "+parseObject.getString(COLUMN_TITLE_NAME));
-									}
-									
-								}else{
-									Log.d(GlobConst.LOG_TAG,"title unpin error: "+e.getMessage());
-								}
-								
-							}
-						});
-					}else{
-						Log.d(GlobConst.LOG_TAG,"title find error: "+e.getMessage());
-					}
-				}
-			});	
-			
-		}else{
-
-			ParseQuery<ParseObject> quoteQuery=new ParseQuery<ParseObject>(TABLE_QUOTE_NAME);
-			quoteQuery.fromLocalDatastore();
-			quoteQuery.fromPin();
-			quoteQuery.setLimit(800);
-			quoteQuery.findInBackground(new FindCallback<ParseObject>() {
-				
-				@Override
-				public void done(final List<ParseObject> parseObjs, ParseException e) {
-					if(e==null){
-					
-								//	ParseObject.pinAllInBackground(TABLE_QUOTE_NAME,parseObjs);
-									for (ParseObject parseObject : parseObjs) {
-										Log.d(GlobConst.LOG_TAG,"author: "+parseObject.getString(COLUMN_QUOTE_USER));
-									}
-									Log.d(GlobConst.LOG_TAG,"obj.size: "+parseObjs.size());
-							
-					}else{
-						Log.d(GlobConst.LOG_TAG,"quote find error: "+e.getMessage());
-					}
-					
-				}
-			});
-			
-			ParseQuery<ParseObject> titleQuery=new ParseQuery<ParseObject>(TABLE_TITLES_NAME);
-			titleQuery.fromLocalDatastore();
-			titleQuery.fromPin();
-			titleQuery.setLimit(MAX_PARSE_QUERY_LIMIT);
-			titleQuery.findInBackground(new FindCallback<ParseObject>() {
-				
-				@Override
-				public void done(final List<ParseObject> parseObjs, ParseException e) {
-					if(e==null){
+					@Override
+					public void done(ParseException e) {
+						if (e==null) {
+							Log.d(GlobConst.LOG_TAG, "Data pinned at locale by tag: "+tag);
+						}else{
+							Log.d(GlobConst.LOG_TAG, "Data DIDNT pinned at locale");
+						}
 						
-								//	ParseObject.pinAllInBackground(TABLE_TITLES_NAME,parseObjs);
-									for (ParseObject parseObject : parseObjs) {
-										Log.d(GlobConst.LOG_TAG,"title: "+parseObject.getString(COLUMN_TITLE_NAME));
-									}
-						
-					}else{
-						Log.d(GlobConst.LOG_TAG,"title find error: "+e.getMessage());
 					}
+				} );
+				}else{
+					Log.d(GlobConst.LOG_TAG,"unping error: "+e.getMessage());
 				}
-			});	
-		}
+			}
+		});
+		
 	}
+	
+	
+	
 	
 }

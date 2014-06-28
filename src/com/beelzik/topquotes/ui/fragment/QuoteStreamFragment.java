@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,15 +30,14 @@ import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 
 
-public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShareClickListener, RefreshQuoteListener{
+public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShareClickListener, RefreshQuoteListener, OnRefreshListener{
 	
 	private static final String ARG_SECTION_NUMBER = "section_number";
 	
 	ListView  lvStreamQuotes;
+	SwipeRefreshLayout swStreamCont;
 	QuotesStreamListAdapter quotesAdapter;
 	ParseQuoteDataManager parseQuoteDataManager;
-	private String progressDialogTitle;
-	private String progressDialogMsg;
 	SharedPreferences sp;
 	int langFlag;
 	
@@ -51,12 +52,6 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 	public QuoteStreamFragment() {
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		progressDialogTitle=getActivity().getString(R.string.progress_dialog_title);
-		progressDialogMsg=getActivity().getString(R.string.progress_dialog_msg);
-	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -64,6 +59,12 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 		View rootView = inflater.inflate(R.layout.fragment_quote_stream, container,
 				false);
 		lvStreamQuotes=(ListView) rootView.findViewById(R.id.lvStreamQuotes);
+		swStreamCont = (SwipeRefreshLayout) rootView.findViewById(R.id.swStreamCont);
+		swStreamCont.setOnRefreshListener(this);
+		swStreamCont.setColorScheme(android.R.color.holo_blue_bright, 
+	            android.R.color.holo_green_light, 
+	            android.R.color.holo_orange_light, 
+	            android.R.color.holo_red_light);
 		
 		return rootView;
 	}
@@ -106,11 +107,8 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 	public void refreshQuotes() {
 		sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
 		langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
-		final ProgressDialog progressDialog=new ProgressDialog(getActivity());
-		progressDialog.setTitle(progressDialogTitle);
-		progressDialog.setMessage(progressDialogMsg);
-
-			progressDialog.show();
+		
+		swStreamCont.setRefreshing(true);
 			parseQuoteDataManager.findAllTitlesQuotes(langFlag,new FindQuotesCallback() {
 				
 				@Override
@@ -119,10 +117,16 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 					quotesAdapter.clean();
 					quotesAdapter.addAll(quotesList);
 					quotesAdapter.notifyDataSetChanged();
-					progressDialog.cancel();
+					swStreamCont.setRefreshing(false);
 				}
 				}
 			});
+	}
+
+	@Override
+	public void onRefresh() {
+		refreshQuotes();
+		
 	}
 }
 

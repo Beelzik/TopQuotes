@@ -3,24 +3,22 @@ package com.beelzik.topquotes.ui.fragment;
 import java.util.List;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
 import com.beelzik.topquotes.db.FindQuotesCallback;
-import com.beelzik.topquotes.db.FindTitlesNameCallback;
 import com.beelzik.topquotes.db.ParseQuoteDataManager;
 import com.beelzik.topquotes.db.QuotesData;
 import com.beelzik.topquotes.ui.activity.MainActivity;
@@ -28,15 +26,14 @@ import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 
 
-public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShareClickListener, RefreshQuoteListener{
+public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShareClickListener, RefreshQuoteListener, OnRefreshListener{
 	
 	private static final String ARG_SECTION_NUMBER = "section_number";
 	
 	ListView  lvTitleQuotes;
+	SwipeRefreshLayout swTitleCont;
 	QuotesStreamListAdapter quotesAdapter;
 	ParseQuoteDataManager parseQuoteDataManager;
-	private String progressDialogTitle;
-	private String progressDialogMsg;
 	private int wutFragment;
 	SharedPreferences sp;
 	int langFlag;
@@ -54,10 +51,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		progressDialogTitle=getActivity().getString(R.string.progress_dialog_title);
-		progressDialogMsg=getActivity().getString(R.string.progress_dialog_msg);
-		
+		super.onCreate(savedInstanceState);	
 		wutFragment=getArguments().getInt(ARG_SECTION_NUMBER);
 	}
 	
@@ -67,7 +61,12 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 		View rootView = inflater.inflate(R.layout.fragment_title_quotes, container,
 				false);
 		lvTitleQuotes=(ListView) rootView.findViewById(R.id.lvTitleQuotes);
-		
+		swTitleCont = (SwipeRefreshLayout) rootView.findViewById(R.id.swTitleCont);
+		swTitleCont.setOnRefreshListener(this);
+		swTitleCont.setColorScheme(android.R.color.holo_blue_bright, 
+	            android.R.color.holo_green_light, 
+	            android.R.color.holo_orange_light, 
+	            android.R.color.holo_red_light);
 		return rootView;
 	}
 
@@ -109,10 +108,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 		sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
 	    langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
-		final ProgressDialog progressDialog=new ProgressDialog(getActivity());
-		progressDialog.setTitle(progressDialogTitle);
-		progressDialog.setMessage(progressDialogMsg);
-			progressDialog.show();
+		swTitleCont.setRefreshing(true);
 			List<String> titleName=parseQuoteDataManager.getTitleList();
 			parseQuoteDataManager.findTitleQuotes(titleName.get(wutFragment),langFlag,new FindQuotesCallback() {
 				
@@ -122,10 +118,15 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 						quotesAdapter.clean();
 						quotesAdapter.addAll(quotesList);
 						quotesAdapter.notifyDataSetChanged();
-						progressDialog.cancel();
+						swTitleCont.setRefreshing(false);
 					}
 				}
 			});
+	}
+
+	@Override
+	public void onRefresh() {
+		refreshQuotes();
 	}
 }
 

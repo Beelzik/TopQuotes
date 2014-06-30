@@ -2,101 +2,129 @@ package com.beelzik.topquotes.ui.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
 
+import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
+import com.beelzik.topquotes.TopQuotesApplication;
+import com.beelzik.topquotes.db.ParseQuoteDataManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
-import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.plus.PlusClient;
-import com.google.android.gms.plus.PlusClient.Builder;
-import com.google.android.gms.plus.PlusOneButton;
-import com.google.android.gms.plus.PlusOneButton.OnPlusOneClickListener;
+import com.google.android.gms.plus.model.people.Person;
+import com.parse.ParseUser;
 
 
-public class AuthActivity extends Activity implements OnClickListener,
-ConnectionCallbacks, OnConnectionFailedListener {
 
-	 private static final String TAG = "ExampleActivity";
-	    private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
+public class AuthActivity extends Activity implements ConnectionCallbacks,
+OnConnectionFailedListener {
+private static final String TAG = "myLogs";
+private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
 
-	    private ProgressDialog mConnectionProgressDialog;
-	    private PlusClient mPlusClient;
-	    private PlusOneButton plusOneButton;
-	    private ConnectionResult mConnectionResult;
+private ProgressDialog mConnectionProgressDialog;
+private PlusClient mPlusClient;
+SharedPreferences sp;
+// private ConnectionResult mConnectionResult;
 
-	    @Override
-	    protected void onCreate(Bundle savedInstanceState) {
-	        super.onCreate(savedInstanceState);
-	        setContentView(R.layout.activity_auth);
-	        mPlusClient = new PlusClient.Builder(this, this, this).build();
-	      plusOneButton=(PlusOneButton) findViewById(R.id.plus_one_button);
-	      plusOneButton.setOnPlusOneClickListener(new OnPlusOneClickListener() {
+ParseQuoteDataManager parseQuoteDataManager;
+
+SignInButton signIn;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_auth);
+		
+		parseQuoteDataManager=((TopQuotesApplication) getApplication())
+				.getParseQuoteDataManager();
+		
+		mPlusClient = new PlusClient.Builder(this, this, this)
 			
-			public void onPlusOneClick(Intent arg0) {
-				// TODO Auto-generated method stub
-				
+			.build();
+		// Progress bar to be displayed if the connection failure is not
+		// resolved.
+		mPlusClient.disconnect();
+		mConnectionProgressDialog = new ProgressDialog(this);
+		mConnectionProgressDialog.setMessage("Signing in...");
+		
+		signIn = (SignInButton) findViewById(R.id.sinBtnAuth);
+		
+		signIn.setOnClickListener(new OnClickListener() {
+		
+			@Override
+			public void onClick(View v) {
+				mConnectionProgressDialog.show();
+				mPlusClient.connect();
 			}
 		});
-	        // Если ошибку соединения не удастся разрешить, будет отображаться индикатор выполнения.
-	        mConnectionProgressDialog = new ProgressDialog(this);
-	        mConnectionProgressDialog.setMessage("Signing in...");
-	    }
+	}
 
-	    @Override
-	    protected void onStart() {
-	        super.onStart();
-	        mPlusClient.connect();
-	    }
+	@Override
+	protected void onStop() {
+		super.onStop();
+		mPlusClient.disconnect();
+	}
 
-	    @Override
-	    protected void onStop() {
-	        super.onStop();
-	        mPlusClient.disconnect();
-	    }
-
-	    @Override
-	    public void onConnectionFailed(ConnectionResult result) {
-	        if (result.hasResolution()) {
-	            try {
-	                result.startResolutionForResult(this, REQUEST_CODE_RESOLVE_ERR);
-	            } catch (SendIntentException e) {
-	                mPlusClient.connect();
-	            }
-	        }
-	        // Сохраним результат и разрешим ошибку соединения по нажатию пользователя.
-	        mConnectionResult = result;
-	    }
-
-	    @Override
-	    protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
-	        if (requestCode == REQUEST_CODE_RESOLVE_ERR && responseCode == RESULT_OK) {
-	            mConnectionResult = null;
-	            mPlusClient.connect();
-	        }
-	    }
-
-	    
-	    @Override
-	    public void onConnected(Bundle arg0) {
-	    	 String accountName = mPlusClient.getAccountName();
-		        Toast.makeText(this, accountName + " is connected.", Toast.LENGTH_LONG).show();
-	    }
-
-	    @Override
-	    public void onDisconnected() {
-	        Log.d(TAG, "disconnected");
-	    }
-
-		@Override
-		public void onClick(View v) {
-			// TODO Auto-generated method stub
-			
+	@Override
+	public void onConnectionFailed(ConnectionResult result) {
+		if (result.hasResolution()) {
+			try {
+				result.startResolutionForResult(this, REQUEST_CODE_RESOLVE_ERR);
+			} catch (SendIntentException e) {
+				mPlusClient.connect();
+			}
 		}
 	}
+
+	@Override
+	public void onConnected(Bundle connectionHint) {
+		mConnectionProgressDialog.dismiss();
+		String accountName = mPlusClient.getAccountName();
+		Person person=mPlusClient.getCurrentPerson();
+		String userDisplayName=person.getDisplayName();
+		String userName=person.getName().getGivenName();
+		String userFamily=person.getName().getFamilyName();
+		String userAvatarUrl=person.getImage().getUrl();
+		try {
+			userAvatarUrl=userAvatarUrl.substring(0,userAvatarUrl.indexOf("?"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
+		sp=PreferenceManager.getDefaultSharedPreferences(this);
+		Editor editor=sp.edit();
+		editor.putString(GlobConst.SP_FLAG_ACOUNT_NAME, accountName);
+		editor.putString(GlobConst.SP_FLAG_USER_NAME, userName);
+		editor.putString(GlobConst.SP_FLAG_USER_FAMILY,userFamily);
+		editor.putString(GlobConst.SP_FLAG_USER_AVATAR_URL,userAvatarUrl);
+		editor.putString(GlobConst.SP_FLAG_USER_DISPLAY_NAME,userDisplayName);
+		editor.commit();
+		
+		if (GlobConst.DEBUG) {
+			Log.d(GlobConst.LOG_TAG," accountName: "+accountName+
+					"\n userName: "+userName+
+					"\n userFamily: "+userFamily+
+					"\n userAvatarUrl: "+userAvatarUrl);
+		}
+		
+		parseQuoteDataManager.addUser();
+		
+	}
+
+	
+	
+	@Override
+	public void onDisconnected() {
+	}
+
+	
+}

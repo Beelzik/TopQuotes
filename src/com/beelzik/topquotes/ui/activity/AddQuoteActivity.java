@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
@@ -17,6 +19,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
 import com.beelzik.topquotes.db.ParseQuoteDataManager;
@@ -43,6 +46,7 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 	
 	
 	ParseQuoteDataManager parseQuoteDataManager;
+	SharedPreferences sp;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +81,8 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 		
 		parseQuoteDataManager=((TopQuotesApplication) getApplication())
 				.getParseQuoteDataManager();
+		
+		sp=PreferenceManager.getDefaultSharedPreferences(this);
 	}
 	
 	@Override
@@ -163,12 +169,19 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				String numSeries=edAddQuoteNumSeries.getText().toString();
 				int numLanguage=spAddQuoteLanguage.getSelectedItemPosition();
 				
+				
 				if(!titleName.equals("") && !titleQuote.equals("")){
-					QuotesData quotesData=new QuotesData(titleQuote, titleName, 
-							numSeason, numSeries, "9l", numLanguage);
-					parseQuoteDataManager.addQuoteInParse(quotesData);
 					
-					showThanksDialog();
+					String userDisplayName=sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME, null);
+					if (userDisplayName!=null) {
+						QuotesData quotesData=new QuotesData(titleQuote, titleName, 
+								numSeason, numSeries,userDisplayName , numLanguage);
+						parseQuoteDataManager.addQuoteInParse(quotesData);
+						showThanksDialog();
+					}
+					
+					
+					
 					
 				}else{
 					Toast.makeText(AddQuoteActivity.this,failInputMessage,

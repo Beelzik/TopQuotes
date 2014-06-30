@@ -1476,7 +1476,7 @@ containing a value of this type.
         public static final int powered_by_google_light=0x7f02007a;
     }
     public static final class id {
-        public static final int action_add_quote=0x7f070077;
+        public static final int action_add_quote=0x7f070076;
         public static final int action_bar=0x7f07002e;
         public static final int action_bar_activity_content=0x7f070027;
         public static final int action_bar_container=0x7f07002d;
@@ -1488,7 +1488,7 @@ containing a value of this type.
         public static final int action_menu_divider=0x7f070028;
         public static final int action_menu_presenter=0x7f070029;
         public static final int action_mode_close_button=0x7f070036;
-        public static final int action_settings=0x7f070076;
+        public static final int action_settings=0x7f070075;
         public static final int activity_chooser_view_content=0x7f070037;
         public static final int always=0x7f07001e;
         public static final int beginning=0x7f070023;
@@ -1540,7 +1540,6 @@ containing a value of this type.
         public static final int never=0x7f07001c;
         public static final int none=0x7f070000;
         public static final int normal=0x7f070001;
-        public static final int plus_one_button=0x7f07005a;
         public static final int production=0x7f070007;
         public static final int progress_circular=0x7f07002a;
         public static final int progress_horizontal=0x7f07002b;
@@ -1562,7 +1561,7 @@ containing a value of this type.
         public static final int showCustom=0x7f07001a;
         public static final int showHome=0x7f070017;
         public static final int showTitle=0x7f070019;
-        public static final int sign_in_button=0x7f070075;
+        public static final int sinBtnAuth=0x7f07005a;
         public static final int spAddQuoteLanguages=0x7f070057;
         public static final int split_action_bar=0x7f070030;
         public static final int strict_sandbox=0x7f070009;

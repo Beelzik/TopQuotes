@@ -333,7 +333,7 @@ int drawable ic_plusone_standard_off_client 0x7f020077
 int drawable ic_plusone_tall_off_client 0x7f020078
 int drawable powered_by_google_dark 0x7f020079
 int drawable powered_by_google_light 0x7f02007a
-int id action_add_quote 0x7f070077
+int id action_add_quote 0x7f070076
 int id action_bar 0x7f07002e
 int id action_bar_activity_content 0x7f070027
 int id action_bar_container 0x7f07002d
@@ -345,7 +345,7 @@ int id action_context_bar 0x7f07002f
 int id action_menu_divider 0x7f070028
 int id action_menu_presenter 0x7f070029
 int id action_mode_close_button 0x7f070036
-int id action_settings 0x7f070076
+int id action_settings 0x7f070075
 int id activity_chooser_view_content 0x7f070037
 int id always 0x7f07001e
 int id beginning 0x7f070023
@@ -397,7 +397,6 @@ int id navigation_drawer 0x7f07005d
 int id never 0x7f07001c
 int id none 0x7f070000
 int id normal 0x7f070001
-int id plus_one_button 0x7f07005a
 int id production 0x7f070007
 int id progress_circular 0x7f07002a
 int id progress_horizontal 0x7f07002b
@@ -419,7 +418,7 @@ int id shortcut 0x7f070040
 int id showCustom 0x7f07001a
 int id showHome 0x7f070017
 int id showTitle 0x7f070019
-int id sign_in_button 0x7f070075
+int id sinBtnAuth 0x7f07005a
 int id spAddQuoteLanguages 0x7f070057
 int id split_action_bar 0x7f070030
 int id strict_sandbox 0x7f070009

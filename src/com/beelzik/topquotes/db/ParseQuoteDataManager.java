@@ -8,10 +8,12 @@ import java.util.concurrent.Executors;
 import android.app.Service;
 import android.content.Context;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.beelzik.topquotes.GlobConst;
@@ -23,6 +25,8 @@ import com.parse.ParseAnonymousUtils;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
 import com.parse.ParseQuery.CachePolicy;
 import com.parse.SaveCallback;
 
@@ -41,7 +45,18 @@ public class ParseQuoteDataManager {
 	public final String TABLE_TITLES_NAME="Titles";
 	
 	public final static String COLUMN_TITLE_NAME="serialName";
+	public final static String COLUMN_TITLE_TYPE="type";
 	
+	
+	public final String TABLE_USER_NAME="User";
+	
+	public final static String COLUMN_USER_NAME="username";
+	public final static String COLUMN_USER_AVATA_URL="userAvatarUrl";
+	
+	
+	
+	private final static int PARSE_TYPE_MODERATED=1;
+	private final static int PARSE_TYPE_DEFAULT=0;
 	
 	private final static int PARSE_THREAD_POOL=10;
 	
@@ -53,6 +68,7 @@ public class ParseQuoteDataManager {
 	ConnectivityManager conMng;
 	ExecutorService executorService;
 	ArrayList<String> titleList;
+	SharedPreferences sp;
 	
 	
 	public ParseQuoteDataManager(Context context) {
@@ -61,6 +77,7 @@ public class ParseQuoteDataManager {
 				getSystemService(Service.CONNECTIVITY_SERVICE);
 		executorService=Executors.newFixedThreadPool(PARSE_THREAD_POOL);
 		titleList=new ArrayList<String>();
+		sp=PreferenceManager.getDefaultSharedPreferences(context);
 	}
 	
 	public void setTitleList(ArrayList<String> titleList) {
@@ -88,10 +105,33 @@ public class ParseQuoteDataManager {
 		sentQuote.put(COLUMN_QUOTE_EPISODE, numSereis);
 		sentQuote.put(COLUMN_QUOTE_USER, userWut);
 		sentQuote.put(COLUMN_QUOTE_LANGUAGE, numLanguege);
+		sentQuote.put(COLUMN_QUOTE_TYPE, PARSE_TYPE_DEFAULT);
 		
 		sentQuote.saveInBackground();
 		
+		
 	    checkTitleName(quoteTitle);
+	}
+	
+	public void addUser(){
+		ParseUser user=new ParseUser();
+		//ParseObject user=new ParseObject(TABLE_USER_NAME);
+		
+		user.setUsername(sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME,null));
+		user.setPassword("0000");
+	//	user.put("username", sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME,null));
+		user.put(COLUMN_USER_AVATA_URL, sp.getString(GlobConst.SP_FLAG_USER_AVATAR_URL,null));
+		//user.si
+		user.signUpInBackground(new SignUpCallback() {
+			
+			@Override
+			public void done(ParseException e) {
+				if(e==null){
+					Log.d(GlobConst.LOG_TAG,"signUp");
+				}
+				
+			}
+		});
 		
 	}
 	
@@ -117,7 +157,7 @@ public class ParseQuoteDataManager {
 		ParseObject proposeTitle=new ParseObject(TABLE_TITLES_NAME);
 		
 		proposeTitle.put(COLUMN_TITLE_NAME, title);
-		
+		proposeTitle.put(COLUMN_TITLE_TYPE, PARSE_TYPE_DEFAULT);
 		proposeTitle.saveInBackground();
 	}
 	
@@ -155,6 +195,7 @@ public class ParseQuoteDataManager {
 				ParseQuery<ParseObject> query=new ParseQuery<ParseObject>(TABLE_QUOTE_NAME);
 				query.whereEqualTo(COLUMN_QUOTE_LANGUAGE, langFlag);
 				query.setLimit(MAX_PARSE_QUERY_LIMIT);
+				query.whereEqualTo(COLUMN_QUOTE_TYPE, PARSE_TYPE_MODERATED);
 				if(titleName!=null){
 					query.whereEqualTo(COLUMN_QUOTE_SERIAL_NAME, titleName);
 				}
@@ -247,7 +288,7 @@ public class ParseQuoteDataManager {
 					String pinTag=PIN_TITLE_NAME+langFlag;
 					ParseQuery<ParseObject> query=new ParseQuery<ParseObject>(TABLE_TITLES_NAME);
 					query.setLimit(MAX_PARSE_QUERY_LIMIT);
-					
+					query.whereEqualTo(COLUMN_TITLE_TYPE, PARSE_TYPE_MODERATED);
 					
 					
 					if (!haveNetCon) {

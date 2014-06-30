@@ -2,6 +2,7 @@ package com.beelzik.topquotes.ui.activity;
 
 import java.util.ArrayList;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
@@ -154,6 +155,7 @@ public class MainActivity extends ActionBarActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			startActivity(new Intent(this, AuthActivity.class));
 			return true;
 		}
 		return super.onOptionsItemSelected(item);

@@ -15,10 +15,12 @@ import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.beelzik.topquotes.GlobConst;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
+import com.parse.LogInCallback;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseAnonymousUtils;
@@ -63,6 +65,8 @@ public class ParseQuoteDataManager {
 	private final static int MAX_PARSE_QUERY_LIMIT=1000;
 	private final static String PIN_TOP_QUTE="Top_quote";
 	private final static String PIN_TITLE_NAME="Title_name";
+	
+	private final String DEFAULT_PARSE_USER_PASSWORD="0000";
 	
 	Context context;
 	ConnectivityManager conMng;
@@ -114,25 +118,50 @@ public class ParseQuoteDataManager {
 	}
 	
 	public void addUser(){
-		ParseUser user=new ParseUser();
-		//ParseObject user=new ParseObject(TABLE_USER_NAME);
 		
-		user.setUsername(sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME,null));
-		user.setPassword("0000");
-	//	user.put("username", sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME,null));
-		user.put(COLUMN_USER_AVATA_URL, sp.getString(GlobConst.SP_FLAG_USER_AVATAR_URL,null));
-		//user.si
+		String userName=sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME,null);
+		String userAvatarUrl= sp.getString(GlobConst.SP_FLAG_USER_AVATAR_URL,null);
+		String userEmail= sp.getString(GlobConst.SP_FLAG_ACOUNT_NAME,null);
+		
+		
+		ParseUser user=new ParseUser();
+		user.setUsername(userName);
+		user.setPassword(DEFAULT_PARSE_USER_PASSWORD);
+		user.setEmail(userEmail);
+		user.put(COLUMN_USER_AVATA_URL,userAvatarUrl);
+	
+		doAuth(user,userEmail);
+		
+	}
+	
+	protected void doAuth(final ParseUser user, final String userEmail) {
 		user.signUpInBackground(new SignUpCallback() {
-			
-			@Override
 			public void done(ParseException e) {
-				if(e==null){
-					Log.d(GlobConst.LOG_TAG,"signUp");
+				if (e == null) {
+					doWallet(user); // the user is new, create wallet for him
+				} else {
+					signIn(userEmail); // user already registered, sign in
 				}
-				
 			}
 		});
-		
+	}
+
+	protected void doWallet(final ParseUser user) {
+	    final ParseObject wallet;
+		wallet = new ParseObject("Wallet");
+		wallet.put("total", 0);
+		wallet.saveInBackground(new SaveCallback() {
+
+			@Override
+			public void done(ParseException arg0) {
+				user.put("wallet", wallet);
+				user.saveInBackground();
+			}
+		});
+	}
+
+	protected void signIn(String userEmail) {
+		ParseUser.logInInBackground(userEmail, DEFAULT_PARSE_USER_PASSWORD, null);
 	}
 	
 	private void checkTitleName(final String titleName){

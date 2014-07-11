@@ -23,6 +23,7 @@ import android.widget.ImageButton;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
+import com.beelzik.topquotes.data.QuizeRecordData;
 import com.beelzik.topquotes.data.QuoteData;
 import com.beelzik.topquotes.data.TitleData;
 import com.beelzik.topquotes.data.UserData;
@@ -161,7 +162,31 @@ public class ParseQuoteDataManager {
 	}
 	
 	
-public void likeQuoteInParse(final View view,final QuoteData targetQuote, final OnQuoteLikedCallback likedCallback){
+	public void addRecordInParse(String date, int score, ParseUser user,SaveCallback callback ){
+		
+		QuizeRecordData recordData=new QuizeRecordData();
+		
+		recordData.putDate(date);
+		recordData.putScore(score);
+		recordData.putUser(user);
+		
+		recordData.saveInBackground(callback);
+	}
+	
+	public void findRecords(FindCallback<QuizeRecordData> callback){
+		
+		ParseQuery<QuizeRecordData> query= ParseQuery.getQuery(QuizeRecordData.class);
+		
+		query.setLimit(10);
+		query.orderByDescending(QuizeRecordData.COLUMN_QUIZE_CREATED_AT);
+		
+		query.findInBackground(callback);
+		
+		
+	}
+	
+	
+	public void likeQuoteInParse(final View view,final QuoteData targetQuote, final OnQuoteLikedCallback likedCallback){
 
 	Log.d(GlobConst.LOG_TAG, "likeQuoteInParse \n"+
 	"quote: "+targetQuote.getQuote()+
@@ -215,7 +240,7 @@ public void likeQuoteInParse(final View view,final QuoteData targetQuote, final 
 
 
 	
-public void addQuoteInParse(final String quote,String titleName,final int season,final int episode,final ParseUser user, final int lang){
+	public void addQuoteInParse(final String quote,String titleName,final int season,final int episode,final ParseUser user, final int lang){
 		
 		final TitleData title=ParseObject.create(TitleData.class);
 		title.putTitleName(titleName);

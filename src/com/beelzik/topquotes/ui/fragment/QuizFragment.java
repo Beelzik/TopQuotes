@@ -1,26 +1,36 @@
 package com.beelzik.topquotes.ui.fragment;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
+import com.beelzik.topquotes.data.QuizeRecordData;
+import com.beelzik.topquotes.data.UserData;
 import com.beelzik.topquotes.logic.game.quize.QuizeGame;
 import com.beelzik.topquotes.logic.game.quize.QuizeGameProgressListener;
 import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.activity.MainActivity;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 public class QuizFragment extends Fragment implements OnClickListener, QuizeGameProgressListener{
 
@@ -39,6 +49,8 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	ParseQuoteDataManager parseQuoteDataManager;
 	
 	 ArrayList<String> fourRandomTitles;
+	 
+	 int quizeGameDefaultLives=3;
 	
 	
 	public static QuizFragment newInstance(int sectionNumber) {
@@ -69,6 +81,8 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		btnQuizPickThree.setOnClickListener(this);
 		btnQuizPickFour.setOnClickListener(this);
 		
+	
+		
 		return rootView;
 		}
 	
@@ -77,9 +91,9 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		super.onActivityCreated(savedInstanceState);
 		parseQuoteDataManager=((TopQuotesApplication) getActivity().
 				getApplication()).getParseQuoteDataManager();
-		quizeGame=new QuizeGame(getActivity(), 10, parseQuoteDataManager);
-		quizeGame.startGame(5);
-		quizeGame.setQuizeGameProgressListener(this);
+		
+		refreshQuizeGame();
+		
 	}
 	
 	@Override
@@ -146,6 +160,58 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	public void quizeGameEnd(int score, int lives) {
 		tvQuizLivesCurrent.setText(lives+"");
 		tvQuizScore.setText(score+"");
+		tvQuizQuote.setText("");
+		
+		ParseUser user=ParseUser.getCurrentUser();
+		
+		if (user!=null) {
+			parseQuoteDataManager.addRecordInParse("no date lel", score, user,new SaveCallback() {
+				
+				@Override
+				public void done(ParseException e) {
+					if(e==null){
+						parseQuoteDataManager.findRecords(new FindCallback<QuizeRecordData>() {
+							
+							@Override
+							public void done(List<QuizeRecordData> objects, ParseException e) {
+								if(e==null){
+									for (QuizeRecordData quizeRecordData : objects) {
+										Log.d(GlobConst.LOG_TAG,"quizeRecordData: \ndate: "
+									+quizeRecordData.getQuizeRecordDate()+"\nscore: "
+									+quizeRecordData.getQuizeRecordScore()+"\nuser: "			
+									+quizeRecordData.getQuizeRecordUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
+									}
+								}
+							}
+						});
+					}
+				}
+			});
+		}else{
+			
+		}
+		
+		AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+	    adb.setTitle("Custom dialog");
+	    // создаем view из dialog.xml
+	    View  view = (LinearLayout) getActivity().getLayoutInflater()
+	        .inflate(R.layout.activity_profile, null);
+	    // устанавливаем ее, как содержимое тела диалога
+	    adb.setView(view);
+		adb.show();
+		
+		refreshQuizeGame();
+		
+	}
+	
+	public void refreshQuizeGame(){
+		
+		quizeGame=new QuizeGame(getActivity(), quizeGameDefaultLives, parseQuoteDataManager);
+		quizeGame.setQuizeGameProgressListener(this);
+		quizeGame.startGame();
+		
+		
+		
 	}
 
 

@@ -2,6 +2,7 @@ package com.beelzik.topquotes;
 
 import android.app.Application;
 
+import com.beelzik.topquotes.data.QuizeRecordData;
 import com.beelzik.topquotes.data.QuoteData;
 import com.beelzik.topquotes.data.TitleData;
 import com.beelzik.topquotes.data.UserData;
@@ -33,7 +34,7 @@ public class TopQuotesApplication extends Application  {
 		parseQuoteDataManager= new ParseQuoteDataManager(getApplicationContext());
 		googlePlusClient= new GooglePlusClient(this);
 		
-		
+		ParseUser.registerSubclass(QuizeRecordData.class);
 		ParseUser.registerSubclass(UserData.class);
 		  ParseObject.registerSubclass(TitleData.class);
 		  ParseObject.registerSubclass(QuoteData.class);

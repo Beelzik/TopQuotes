@@ -3,8 +3,6 @@ package com.beelzik.topquotes.ui.fragment;
 import java.util.List;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -16,23 +14,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.db.FindQuotesCallback;
-import com.beelzik.topquotes.db.FindTitlesNameCallback;
-import com.beelzik.topquotes.db.ParseQuoteDataManager;
-import com.beelzik.topquotes.db.QuotesData;
+import com.beelzik.topquotes.data.QuoteData;
+import com.beelzik.topquotes.data.UserData;
+import com.beelzik.topquotes.parse.FindQuotesCallback;
+import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.activity.MainActivity;
+import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnLikeClickListener;
 import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseRelation;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 
-public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShareClickListener, RefreshQuoteListener, OnRefreshListener{
+public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShareClickListener, 
+RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	
-	private static final String ARG_SECTION_NUMBER = "section_number";
 	
 	ListView  lvStreamQuotes;
 	SwipeRefreshLayout swStreamCont;
@@ -44,7 +47,7 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 	public static QuoteStreamFragment newInstance(int sectionNumber) {
 		QuoteStreamFragment fragment = new QuoteStreamFragment();
 		Bundle args = new Bundle();
-		args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+		args.putInt(GlobConst.ARG_SECTION_FRAGMENT_NUMBER, sectionNumber);
 		fragment.setArguments(args);
 		return fragment;
 	}
@@ -73,19 +76,24 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		((MainActivity) activity).onSectionAttached(getArguments().getInt(
-				ARG_SECTION_NUMBER),this);
+				GlobConst.ARG_SECTION_FRAGMENT_NUMBER),this);
 		
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		quotesAdapter=new QuotesStreamListAdapter(getActivity());
-		quotesAdapter.setBtnShareClickListener(this);
-		lvStreamQuotes.setAdapter(quotesAdapter);
 		
 		parseQuoteDataManager=((TopQuotesApplication) getActivity().
 				getApplication()).getParseQuoteDataManager();
+		
+		quotesAdapter=new QuotesStreamListAdapter(getActivity(),parseQuoteDataManager);
+		quotesAdapter.setBtnShareClickListener(this);
+		quotesAdapter.setBtnLikeClickListener(this);
+		//quotesAdapter.setIvAvatarClickListener(this);
+		lvStreamQuotes.setAdapter(quotesAdapter);
+		
+		
 		refreshQuotes();
 	}
 
@@ -93,7 +101,6 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 	@Override
 	public void onStop() {
 		super.onStop();
-		parseQuoteDataManager.shutDownAllActions();
 	}
 	
 	@Override
@@ -105,14 +112,16 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 
 	@Override
 	public void refreshQuotes() {
+		Log.d(GlobConst.LOG_TAG,"QuoteStrem refreshQuotes() ");
+		
 		sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
 		langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
 		swStreamCont.setRefreshing(true);
-			parseQuoteDataManager.findAllTitlesQuotes(langFlag,new FindQuotesCallback() {
+			parseQuoteDataManager.findAllTitlesQuotes(20,0,langFlag,new FindQuotesCallback() {
 				
 				@Override
-				public void findQuotesCallback(List<QuotesData> quotesList, int resultCode) {
+				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
 				if (resultCode==FindQuotesCallback.FIND_RESULT_OK) {
 					quotesAdapter.clean();
 					quotesAdapter.addAll(quotesList);
@@ -127,6 +136,11 @@ public class QuoteStreamFragment extends Fragment implements OnQuotesListBtnShar
 	public void onRefresh() {
 		refreshQuotes();
 		
+	}
+
+	@Override
+	public void onBtnLikeClickListener(View view, final int position) {
+
 	}
 }
 

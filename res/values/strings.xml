@@ -10,6 +10,7 @@
         <item >&gt;&gt;&gt; Quote stream</item>
         <item >&gt;&gt;&gt;	Quiz</item>
         <item >&gt;&gt;&gt; Top favorites</item>
+        <item >&gt;&gt;&gt; Slide quote</item>
     </string-array>
     <string name="progress_dialog_title">Connection</string>
   	<string name="progress_dialog_msg">Quotes loading</string>
@@ -21,6 +22,7 @@
   		<item >English</item>
   	</string-array>
   		<string name="action_add_quote">Add new quote</string>
+  		<string name="add_quote_sp_title_Enter_title">Enter title</string>
   		<string name="add_quote_lb_title">Title name*:</string>
   		<string name="add_quote_ed_title_hint">Enter full title name</string>
   		<string name="add_quote_lb_text">Quote text*:</string>
@@ -43,4 +45,16 @@
   		<string name="add_quote_dlg_conf_fail_input">Field of the title name and quote must be filled</string>
   		
   		<string name="list_stream_lb_num_season">"Seasone: "</string>
+  		
+  		<string name="action_profile">Profile</string>
+  		
+  		<string name="act_profile_btn_SignQut">Sign out</string>
+  		
+  		<string name="act_prof_lb_user_name">Name:</string>
+  		
+  		<string name="act_prof_lb_user_email">"Email: "</string>
+  		
+  		<string name="act_profile_lb_published_quotes">"Published quotes: "</string>
+  		
+  		<string name="act_prof_lb_published_quotes">"Published quotes: "</string>
 </resources>

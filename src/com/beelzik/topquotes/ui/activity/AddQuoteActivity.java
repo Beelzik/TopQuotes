@@ -1,6 +1,7 @@
 package com.beelzik.topquotes.ui.activity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -11,9 +12,12 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,9 +27,10 @@ import android.widget.Toast;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.db.ParseQuoteDataManager;
-import com.beelzik.topquotes.db.QuotesData;
+import com.beelzik.topquotes.parse.FindTitlesNameCallback;
+import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
+import com.parse.ParseUser;
 
 public class AddQuoteActivity extends ActionBarActivity implements OnClickListener{
 	
@@ -37,11 +42,12 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 	EditText edAddQuoteNumSeason;
 	
 	Spinner spAddQuoteLanguage;
+	Spinner spAddQuoteTitleName;
 	
 	Button btnAddQuote;
 
     private ArrayAdapter<String> languageAdapter;
-	private ArrayList<SpinnerNavItem> navSpinner;
+    private ArrayAdapter<String> titlesAdapter;
 	
 	String[] checkedLaguages;
 	
@@ -49,19 +55,36 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 	ParseQuoteDataManager parseQuoteDataManager;
 	SharedPreferences sp;
 	
+	String spDefaultValue;
+	
+	int nonTitleItemsLangth;
+	ArrayList<String> defTitleList;
+	ArrayList<String> curTitleList;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_quote);
 		
+		parseQuoteDataManager=((TopQuotesApplication) getApplication())
+				.getParseQuoteDataManager();
+		
+		curTitleList=new ArrayList<String>();
 		
 		checkedLaguages=getResources().getStringArray(R.array.check_languages);
+		spDefaultValue=getString(R.string.add_quote_sp_title_Enter_title);
+		nonTitleItemsLangth=getResources().getStringArray(R.array.navigation_drawer_const_item).length;
 		
+		defTitleList= new ArrayList<String>();
+		defTitleList.add(spDefaultValue);
 	        languageAdapter = new ArrayAdapter<String>(this,
 	        		android.R.layout.simple_list_item_1,
 	        		android.R.id.text1,
 	        		checkedLaguages);
-	       
+	        
+	        titlesAdapter = new ArrayAdapter<String>(this,
+	        		android.R.layout.simple_list_item_1,
+	        		android.R.id.text1,
+	        		defTitleList);
 	      
 	        
 	        
@@ -74,14 +97,74 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 		edAddQuoteNumSeason=(EditText) findViewById(R.id.edAddQuoteNumSeason);
 		edAddQuoteNumSeries=(EditText) findViewById(R.id.edAddQuoteNumSeries);
 		
+		spAddQuoteTitleName=(Spinner) findViewById(R.id.spAddQuoteTitleName);
+		spAddQuoteTitleName.setAdapter(titlesAdapter);
+		spAddQuoteTitleName.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				if(position==0){
+					edAddQuoteTitleName.setEnabled(true);
+				}else{
+					edAddQuoteTitleName.setEnabled(false);
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
 		spAddQuoteLanguage=(Spinner) findViewById(R.id.spAddQuoteLanguages);
 		spAddQuoteLanguage.setAdapter(languageAdapter);
+		spAddQuoteLanguage.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				Log.d(GlobConst.LOG_TAG,"setOnItemSelectedListener position: "
+					+position);
+				
+			parseQuoteDataManager.findAllTitleName(position, new FindTitlesNameCallback() {
+					
+					@Override
+					public void findTitleNameCallback(List<String> titleNameList, int resultCode) {
+						
+						titlesAdapter.clear();
+						titlesAdapter.add(spDefaultValue);
+						
+						Log.d(GlobConst.LOG_TAG,"curTitleList.size(): "
+								+curTitleList.size());
+						
+						for (String titleName : titleNameList) {
+							Log.d(GlobConst.LOG_TAG,"titleName: "
+									+titleName);
+							titlesAdapter.add(titleName);
+						}	
+						
+						
+						
+						titlesAdapter.notifyDataSetChanged();
+					}
+				});
+				
+				
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+	
 		
 		btnAddQuote=(Button) findViewById(R.id.btnAddQuote);
 		btnAddQuote.setOnClickListener(this);
-		
-		parseQuoteDataManager=((TopQuotesApplication) getApplication())
-				.getParseQuoteDataManager();
 		
 		sp=PreferenceManager.getDefaultSharedPreferences(this);
 	}
@@ -163,21 +246,25 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				
 				String failInputMessage;
 				failInputMessage=getString(R.string.add_quote_dlg_conf_fail_input);
-				
-				String titleName=edAddQuoteTitleName.getText().toString();
+				String titleName;
+				if (spAddQuoteTitleName.getSelectedItemPosition()==0) {
+					titleName=edAddQuoteTitleName.getText().toString();
+				}else{
+					titleName=(String) spAddQuoteTitleName.getSelectedItem();
+				}
+			
 				String titleQuote=edAddQuoteText.getText().toString();
-				String numSeason=edAddQuoteNumSeason.getText().toString();
-				String numSeries=edAddQuoteNumSeries.getText().toString();
-				int numLanguage=spAddQuoteLanguage.getSelectedItemPosition();
+				int season=Integer.parseInt(edAddQuoteNumSeason.getText().toString());
+				int episode=Integer.parseInt(edAddQuoteNumSeries.getText().toString());
+				int lang=spAddQuoteLanguage.getSelectedItemPosition();
 				
-				
-				if(!titleName.equals("") && !titleQuote.equals("")){
+				ParseUser user=ParseUser.getCurrentUser();
+				if(!titleName.equals("") && !titleQuote.equals("") && (user!=null)){
 					
 					String userDisplayName=sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME, null);
 					if (userDisplayName!=null) {
-						QuotesData quotesData=new QuotesData(titleQuote, titleName, 
-								numSeason, numSeries,userDisplayName , numLanguage);
-						parseQuoteDataManager.addQuoteInParse(quotesData);
+						
+						parseQuoteDataManager.addQuoteInParse(titleQuote, titleName, season, episode, user, lang);
 						showThanksDialog();
 					}
 					

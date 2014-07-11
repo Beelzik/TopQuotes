@@ -63,10 +63,22 @@
                 android:text="@string/frag_quiz_lb_lives" />
 
             <TextView
-                android:id="@+id/tvQuizLives"
+                android:id="@+id/tvQuizLivesCurrent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="-/-" />
+                android:text="-" />
+
+            <TextView
+                android:id="@+id/tvQuizLivesSlesh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="/" />
+
+            <TextView
+                android:id="@+id/tvQuizLivesPeak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-" />
 
         </LinearLayout>
 

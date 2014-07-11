@@ -12,15 +12,25 @@
         android:layout_height="wrap_content"
         android:text="@string/add_quote_lb_title" />
 
-    <EditText
-        android:id="@+id/edAddQuoteTitleName"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/add_quote_ed_title_hint" >
+        android:layout_height="wrap_content" >
 
-        <requestFocus />
-    </EditText>
+        <Spinner
+            android:id="@+id/spAddQuoteTitleName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <EditText
+            android:id="@+id/edAddQuoteTitleName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:ems="10"
+            android:hint="@string/add_quote_ed_title_hint" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tvAddQuoteLbText"

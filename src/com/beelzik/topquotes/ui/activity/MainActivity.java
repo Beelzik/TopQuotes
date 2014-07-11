@@ -19,14 +19,16 @@ import android.view.MenuItem;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.db.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
+import com.beelzik.topquotes.ui.fragment.PagerFragment;
 import com.beelzik.topquotes.ui.fragment.QuizFragment;
 import com.beelzik.topquotes.ui.fragment.QuoteStreamFragment;
 import com.beelzik.topquotes.ui.fragment.NavigationDrawerFragment;
 import com.beelzik.topquotes.ui.fragment.RefreshQuoteListener;
 import com.beelzik.topquotes.ui.fragment.TitleQuotesFragment;
+import com.beelzik.topquotes.ui.fragment.TopFavoritesFragment;
 
 
 public class MainActivity extends ActionBarActivity implements
@@ -75,6 +77,7 @@ public class MainActivity extends ActionBarActivity implements
 	public void onNavigationDrawerItemSelected(int position) {
 		switch(position){
 		case 0:
+			Log.d(GlobConst.LOG_TAG,"item 0 selected");
 			QuoteStreamFragment quoteStremFragment= QuoteStreamFragment.newInstance(position);
 			replaceFragment(quoteStremFragment);
 			
@@ -85,6 +88,13 @@ public class MainActivity extends ActionBarActivity implements
 			replaceFragment(quizFragment);
 			break;
 		case 2:
+			TopFavoritesFragment favoriteFragment= TopFavoritesFragment.newInstance(position);
+			replaceFragment(favoriteFragment);
+			break;
+		case 3:
+			PagerFragment pagerFragment= PagerFragment.newInstance(position);
+			
+			replaceFragment(pagerFragment);
 			break;
 		default:
 			TitleQuotesFragment titleQuotesFragment=TitleQuotesFragment.newInstance(position);
@@ -104,7 +114,7 @@ public class MainActivity extends ActionBarActivity implements
 	}
 	
 	public void onSectionAttached(int number, RefreshQuoteListener listener) {
-		ArrayList<String> titleList=parseQuoteDataManager.getTitleList();
+		ArrayList<String> titleList=parseQuoteDataManager.getTitleList(langFlag);
 		mTitle=titleList.get(number);
 		mNavigationDrawerFragment.setRefreshQuoteListener(listener);
 		setRefreshQuoteListener(listener);
@@ -158,6 +168,7 @@ public class MainActivity extends ActionBarActivity implements
 			startActivity(new Intent(this, AuthActivity.class));
 			return true;
 		}
+		
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -175,6 +186,10 @@ public class MainActivity extends ActionBarActivity implements
   	  		Editor editor=sp.edit();
   	  		editor.putInt(GlobConst.SP_FLAG_WUT_LANG, position);
   	  		editor.commit();
+  	  		
+  	  	//	mNavigationDrawerFragment.selectItem(0);
+  	  		
+  	  		mNavigationDrawerFragment.refreshNavigationTitleList(langFlag);
   	  		if (refreshQuoteListener!=null) {
   	    		refreshQuoteListener.refreshQuotes();
 			}

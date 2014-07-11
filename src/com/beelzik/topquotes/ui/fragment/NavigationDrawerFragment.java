@@ -1,6 +1,7 @@
 package com.beelzik.topquotes.ui.fragment;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
@@ -31,11 +32,20 @@ import android.widget.Toast;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.db.FindTitlesNameCallback;
-import com.beelzik.topquotes.db.ParseQuoteDataManager;
+import com.beelzik.topquotes.data.UserData;
+import com.beelzik.topquotes.parse.FindTitlesNameCallback;
+import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.ParseRelationTester;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
 import com.beelzik.topquotes.ui.activity.AddQuoteActivity;
+import com.beelzik.topquotes.ui.activity.ProfileActivity;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
+import com.parse.LogInCallback;
+import com.parse.ParseException;
+import com.parse.SaveCallback;
+import com.parse.ParseFacebookUtils.Permissions.User;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
 
 
 public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNavigationListener{
@@ -72,6 +82,9 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
 	
 	SharedPreferences sp;
 	int langFlag;
+	
+	
+	ParseRelationTester parseRelationTester;
     
     ArrayAdapter<String> navigationAdapter;
     public NavigationDrawerFragment() {
@@ -82,7 +95,8 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         super.onCreate(savedInstanceState);
          
         checkedLaguages=getResources().getStringArray(R.array.check_languages);
- 
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
         navConstItemsList=new ArrayList<String>();
         navConstItems=getResources().getStringArray(R.array.navigation_drawer_const_item);
@@ -97,10 +111,9 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         parseQuoteDataManager=((TopQuotesApplication) getActivity().
 				getApplication()).getParseQuoteDataManager();
         
-        parseQuoteDataManager.setTitleList(navConstItemsList);
+        parseQuoteDataManager.setTitleList(langFlag,navConstItemsList);
         
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
+        
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
 
         if (savedInstanceState != null) {
@@ -109,6 +122,10 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         }
 
         selectItem(mCurrentSelectedPosition);
+        
+        ////////
+        
+        parseRelationTester= new ParseRelationTester();
     }
 
     @Override
@@ -117,6 +134,10 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         setHasOptionsMenu(true);
     }
 
+   public ArrayAdapter<String> getTitleList(){
+	   return navigationAdapter;
+   }
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
@@ -145,22 +166,8 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         
         sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
         langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
-        parseQuoteDataManager.findAllTitleName(langFlag,new FindTitlesNameCallback() {
-			
-			@Override
-			public void findTitleNameCallback(List<String> titleNameList, int resultCode) {
-				if (resultCode==FindTitlesNameCallback.FIND_RESULT_OK) {
-					for (String string : titleNameList) {
-					//	navConstItemsList.add(string);
-						navigationAdapter.add(string);
-					}
-					parseQuoteDataManager.setTitleList(navConstItemsList);
-					navigationAdapter.notifyDataSetChanged();
-				}
-				
-				
-			}
-		});
+        
+        refreshNavigationTitleList(langFlag);
         
         return mDrawerListView;
     }
@@ -227,7 +234,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
-    private void selectItem(int position) {
+    public void selectItem(int position) {
         mCurrentSelectedPosition = position;
         if (mDrawerListView != null) {
             mDrawerListView.setItemChecked(position, true);
@@ -288,6 +295,11 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
              Intent intent=new Intent(getActivity(), AddQuoteActivity.class);
              startActivity(intent);
         	 return true;
+        case R.id.action_profile:
+        	
+        	startActivity(new Intent(getActivity(), ProfileActivity.class));
+       	 
+       	 return true;
         default:
         	break;
         }
@@ -344,6 +356,11 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
   	  		Editor editor=sp.edit();
   	  		editor.putInt(GlobConst.SP_FLAG_WUT_LANG, position);
   	  		editor.commit();
+  	  		Log.d(GlobConst.LOG_TAG, "currentItemSelected: "+mCurrentSelectedPosition+" , new sel position: "+0);
+  	  		
+  	  		//mDrawerListView.performItemClick(null, 0, 0);
+  	  		
+  	  		refreshNavigationTitleList(langFlag);
   	  		if (refreshQuoteListener!=null) {
   				refreshQuoteListener.refreshQuotes();
   			}
@@ -360,5 +377,63 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
          */
         void onNavigationDrawerItemSelected(int position);
     }
+
+    public void refreshNavigationTitleList(final int langFlag){
+    	Log.d(GlobConst.LOG_TAG, "refreshNavigationTitleList");
+    	  
+          parseQuoteDataManager.findAllTitleName(langFlag,new FindTitlesNameCallback() {
+  			
+  			@Override
+  			public void findTitleNameCallback(List<String> titleNameList, int resultCode) {
+  				if (resultCode==FindTitlesNameCallback.FIND_RESULT_OK) {
+  					//navigationAdapter.clear();
+  					
+  					ArrayList<String> titleConteiner=new ArrayList<String>();
+  					///titleConteiner.addAll(navConstItems);
+  					
+  					for (int i = 0; i < navConstItems.length; i++) {
+						titleConteiner.add(navConstItems[i]); 
+						
+					}
+  					
+  					
+  					int navItemLength=navigationAdapter.getCount();
+  					for (int i =navConstItems.length; i <navItemLength ; i++) {
+  						Log.d(GlobConst.LOG_TAG, "remove item: "+navigationAdapter.getItem(navConstItems.length));
+  						navigationAdapter.remove(navigationAdapter.getItem(navConstItems.length));
+					}
+  					
+  					
+  					/*for (String  navConstItem : navConstItems) {
+  						navigationAdapter.add(navConstItem);
+					}*/
+  					
+  					for (String titleName : titleNameList) {
+  						titleConteiner.add(titleName);
+  						navigationAdapter.add(titleName);
+  						Log.d(GlobConst.LOG_TAG, "title navigation name: "+titleName);
+					}
+  					
+  					for (int i = 0; i < navigationAdapter.getCount(); i++) {
+  						Log.d(GlobConst.LOG_TAG, "=====================title navigation name: "+navigationAdapter.getItem(i));
+						
+					}
+  					
+  					for (String string : titleConteiner) {
+  						Log.d(GlobConst.LOG_TAG, "/////////////---------title cont: "+string);
+					}
+  					/*for (String string : titleNameList) {
+  						
+  						navigationAdapter.add(string);
+  					}*/
+  					parseQuoteDataManager.setTitleList(langFlag,titleConteiner);
+  					navigationAdapter.notifyDataSetChanged();
+  				}
+  				
+  				
+  			}
+  		});
+    }
+
   
 }

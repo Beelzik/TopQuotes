@@ -42,10 +42,13 @@ import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
 
 public class ParseQuoteDataManager {		
+
+	
 	private final static int PARSE_TYPE_MODERATED=1;
 	private final static int PARSE_TYPE_DEFAULT=0;
 	
-	private final static int PARSE_THREAD_POOL=1;
+	private final static int PARSE_LIKE_EXEC_THREAD_POOL=1;
+	private final static int PARSE_GLOB_EXEC_THREAD_POOL=20;
 	
 	private final static int MAX_PARSE_QUERY_LIMIT=20;
 	private final static String PIN_TOP_QUTE="Top_quote";
@@ -56,8 +59,12 @@ public class ParseQuoteDataManager {
 	static Context context;
 	ConnectivityManager conMng;
 	static ExecutorService execLikesService;
+	static ExecutorService execService;
+	
 	HashMap<Integer,ArrayList<String>> mapTileList;
 	SharedPreferences sp;
+	
+	FindTopTenAndUserRecordsCallback recordsCallback;
 	
 	
 	public ParseQuoteDataManager(Context context) {
@@ -67,7 +74,8 @@ public class ParseQuoteDataManager {
 		
 		
 		mapTileList= new HashMap<Integer, ArrayList<String>>();
-		 execLikesService=Executors.newFixedThreadPool(PARSE_THREAD_POOL);
+		 execLikesService=Executors.newFixedThreadPool(PARSE_LIKE_EXEC_THREAD_POOL);
+		 execService=Executors.newFixedThreadPool(PARSE_GLOB_EXEC_THREAD_POOL);
 		sp=PreferenceManager.getDefaultSharedPreferences(context);
 		
 	}
@@ -75,6 +83,7 @@ public class ParseQuoteDataManager {
 	public void setTitleList(int langFlag,ArrayList<String> titleList) {
 		mapTileList.put(langFlag,titleList);
 	}
+	
 	
 	public ArrayList<String> getTitleList(int langFlag) {
 		return mapTileList.get(langFlag);
@@ -173,17 +182,79 @@ public class ParseQuoteDataManager {
 		recordData.saveInBackground(callback);
 	}
 	
-	public void findRecords(FindCallback<QuizeRecordData> callback){
+	public void findTopTenRecordsAndUser(FindTopTenAndUserRecordsCallback recordsCallback){
 		
-		ParseQuery<QuizeRecordData> query= ParseQuery.getQuery(QuizeRecordData.class);
 		
-		query.setLimit(10);
-		query.orderByDescending(QuizeRecordData.COLUMN_QUIZE_CREATED_AT);
-		
-		query.findInBackground(callback);
-		
+		RecordsTask recordsTask=new RecordsTask(recordsCallback);
+		recordsTask.executeOnExecutor(execService);
 		
 	}
+	
+	private static class RecordsTask extends AsyncTask<Void, Void, Integer>{
+
+		final static int TOP_TEN_RECORDS=10;
+		final static int TOP_USER_RECORD=1;
+		
+		FindTopTenAndUserRecordsCallback recordsCallback;
+		ArrayList<QuizeRecordData> topTenRecordsList;
+		QuizeRecordData userTopRecord;
+		
+		public RecordsTask(FindTopTenAndUserRecordsCallback recordsCallback) {
+			this.recordsCallback=recordsCallback;
+		}
+		
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			Log.d(GlobConst.LOG_TAG, "RecordsTask start");
+			
+			try {
+				
+				ParseQuery<QuizeRecordData> queryTopTen= ParseQuery.getQuery(QuizeRecordData.class);
+				
+				queryTopTen.setLimit(TOP_TEN_RECORDS);
+				queryTopTen.orderByDescending(QuizeRecordData.COLUMN_QUIZE_SCORE);
+				
+				topTenRecordsList= (ArrayList<QuizeRecordData>) queryTopTen.find();
+				
+				
+				ParseQuery<QuizeRecordData> queryTopUser= ParseQuery.getQuery(QuizeRecordData.class);
+				
+				queryTopUser.setLimit(TOP_USER_RECORD);
+				queryTopUser.orderByAscending(QuizeRecordData.COLUMN_QUIZE_CREATED_AT);
+				
+				userTopRecord=queryTopTen.getFirst();
+				
+				return FindTopTenAndUserRecordsCallback.FIND_RESULT_OK;
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.d(GlobConst.LOG_TAG, "RecordsTask error: "+e.getMessage());
+			}
+			return FindTopTenAndUserRecordsCallback.FIND_RESULT_ERROR;
+
+		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			if (FindTopTenAndUserRecordsCallback.FIND_RESULT_OK==result) {
+				if (recordsCallback!=null) {
+				recordsCallback.findTopTenAndUserRecordsCallback(topTenRecordsList, userTopRecord,
+						FindTopTenAndUserRecordsCallback.FIND_RESULT_OK);
+				}
+				Log.d(GlobConst.LOG_TAG, "RecordsTask FIND_RESULT_OK");
+			}else{
+				if (recordsCallback!=null) {
+					recordsCallback.findTopTenAndUserRecordsCallback(null, null,
+							FindTopTenAndUserRecordsCallback.FIND_RESULT_ERROR);
+					Log.d(GlobConst.LOG_TAG, "RecordsTask FIND_RESULT_ERROR");		
+				}
+			}
+		}
+
+		
+	}
+	
 	
 	
 	public void likeQuoteInParse(final View view,final QuoteData targetQuote, final OnQuoteLikedCallback likedCallback){

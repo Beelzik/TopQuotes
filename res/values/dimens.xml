@@ -10,5 +10,7 @@
     -->
     <dimen name="navigation_drawer_width">240dp</dimen>
     <dimen name="quiz_layout_panding">5dp</dimen>
+    <dimen name="dialog_quize_panding">20dp</dimen>
+    <dimen name="dialog_quize_top_panding">10dp</dimen>
 
 </resources>

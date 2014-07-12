@@ -1,10 +1,15 @@
 package com.beelzik.topquotes.ui.fragment;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.Service;
+import android.content.DialogInterface;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,6 +20,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,8 +31,10 @@ import com.beelzik.topquotes.data.QuizeRecordData;
 import com.beelzik.topquotes.data.UserData;
 import com.beelzik.topquotes.logic.game.quize.QuizeGame;
 import com.beelzik.topquotes.logic.game.quize.QuizeGameProgressListener;
+import com.beelzik.topquotes.parse.FindTopTenAndUserRecordsCallback;
 import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.activity.MainActivity;
+import com.beelzik.topquotes.ui.adapter.QuizeRecordAdapter;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
@@ -50,7 +58,18 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	
 	 ArrayList<String> fourRandomTitles;
 	 
-	 int quizeGameDefaultLives=3;
+	 int quizeGameDefaultLives=5;
+	 
+	 String congratulationsUrScoreNewRecord;
+	 String dialBtnPosetiveRestartGame;
+	 String dialogProgressTitle;
+	 int userGameScore;
+	 String userGameDateEnd;
+	 
+	 ConnectivityManager conMng;
+	 
+	 
+	
 	
 	
 	public static QuizFragment newInstance(int sectionNumber) {
@@ -81,7 +100,6 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		btnQuizPickThree.setOnClickListener(this);
 		btnQuizPickFour.setOnClickListener(this);
 		
-	
 		
 		return rootView;
 		}
@@ -91,6 +109,12 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		super.onActivityCreated(savedInstanceState);
 		parseQuoteDataManager=((TopQuotesApplication) getActivity().
 				getApplication()).getParseQuoteDataManager();
+		
+		conMng= (ConnectivityManager) getActivity().getSystemService(Service.CONNECTIVITY_SERVICE);
+		
+		congratulationsUrScoreNewRecord=getActivity().getString(R.string.dialog_quize_congratulations);
+		dialBtnPosetiveRestartGame=getActivity().getString(R.string.dialog_quize_posetive_btn_restart_game);
+		dialogProgressTitle=getActivity().getString(R.string.dialog_quize_progress_title);
 		
 		refreshQuizeGame();
 		
@@ -131,6 +155,7 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		tvQuizScore.setText(score+"");
 		tvQuizQuote.setText("");
 		
+		userGameScore=score;
 		
 	}
 	
@@ -146,6 +171,8 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		btnQuizPickTwo.setText(fourRandomTitles.get(1));
 		btnQuizPickThree.setText(fourRandomTitles.get(2));
 		btnQuizPickFour.setText(fourRandomTitles.get(3));
+		
+		userGameScore=score;
 	}
 
 
@@ -153,6 +180,16 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	public void quizeGameAnswer(boolean isCorrect, String titleName) {
 		Toast.makeText(getActivity(),"is correct: "+isCorrect+" title: "+titleName, Toast.LENGTH_LONG).show();
 		
+	}
+	
+	private boolean checkNetConection(){
+		 if (conMng.getActiveNetworkInfo() != null
+                && conMng.getActiveNetworkInfo().isAvailable()
+                && conMng.getActiveNetworkInfo().isConnected()) {
+			 return true;
+		 }else {
+			 return false;
+		 }
 	}
 
 
@@ -163,55 +200,148 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		tvQuizQuote.setText("");
 		
 		ParseUser user=ParseUser.getCurrentUser();
+		SimpleDateFormat format= new SimpleDateFormat("dd MMMM yyyy hh.mm");
+		userGameDateEnd=format.format(System.currentTimeMillis());
+		
+		userGameScore=score;
+		
+		final boolean hasNetConnection=checkNetConection();
 		
 		if (user!=null) {
-			parseQuoteDataManager.addRecordInParse("no date lel", score, user,new SaveCallback() {
+			parseQuoteDataManager.addRecordInParse(userGameDateEnd, score, user,new SaveCallback() {
 				
 				@Override
 				public void done(ParseException e) {
 					if(e==null){
-						parseQuoteDataManager.findRecords(new FindCallback<QuizeRecordData>() {
-							
-							@Override
-							public void done(List<QuizeRecordData> objects, ParseException e) {
-								if(e==null){
-									for (QuizeRecordData quizeRecordData : objects) {
-										Log.d(GlobConst.LOG_TAG,"quizeRecordData: \ndate: "
-									+quizeRecordData.getQuizeRecordDate()+"\nscore: "
-									+quizeRecordData.getQuizeRecordScore()+"\nuser: "			
-									+quizeRecordData.getQuizeRecordUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
-									}
+						if (hasNetConnection) {
+							parseQuoteDataManager.findTopTenRecordsAndUser(new FindTopTenAndUserRecordsCallback() {
+								
+								@Override
+								public void findTopTenAndUserRecordsCallback(
+										ArrayList<QuizeRecordData> topTenRecordsList,
+										QuizeRecordData userTopRecord, int resultCode) {
+								if (resultCode==FindTopTenAndUserRecordsCallback.FIND_RESULT_OK) {
+									createDialogProgressWithNet(topTenRecordsList, userTopRecord);
+									Log.d(GlobConst.LOG_TAG, "FIND_RESULT_OK");
+								}	
 								}
-							}
-						});
+							});
+						}
+						
 					}
 				}
 			});
-		}else{
-			
 		}
 		
-		AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
-	    adb.setTitle("Custom dialog");
-	    // создаем view из dialog.xml
-	    View  view = (LinearLayout) getActivity().getLayoutInflater()
-	        .inflate(R.layout.activity_profile, null);
-	    // устанавливаем ее, как содержимое тела диалога
-	    adb.setView(view);
-		adb.show();
+		if (!hasNetConnection) {
+			createDialogProgressWithoutNet();
+		}
 		
-		refreshQuizeGame();
+		
+	
+	}
+	
+	
+	public void createDialogProgressWithoutNet(){
+		
+		AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+	    adb.setTitle(dialogProgressTitle);
+	  
+	    View  view = (LinearLayout) getActivity().getLayoutInflater()
+	        .inflate(R.layout.dialog_quize_records_without_net, null);
+	
+	    TextView tvQuizeDialogCurrentDate=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentDate);
+	    TextView tvQuizeDialogCurrentUserName=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentUserName);
+	    TextView tvQuizeDialogCurrentScore=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentScore);
+	    
+	    tvQuizeDialogCurrentDate.setText(userGameDateEnd);
+	    tvQuizeDialogCurrentUserName.setText(ParseUser.getCurrentUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
+	    tvQuizeDialogCurrentScore.setText(userGameScore+"");
+	    
+	    adb.setView(view);
+	    adb.setPositiveButton(dialBtnPosetiveRestartGame, new Dialog.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if(which==Dialog.BUTTON_POSITIVE){
+					refreshQuizeGame();
+				}
+			}
+		});
+		adb.show();
+	    
+	}
+	
+	
+	public void createDialogProgressWithNet(ArrayList<QuizeRecordData> topTenRecordsList, QuizeRecordData userTopRecord){
+		
+		
+		AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+	    adb.setTitle(dialogProgressTitle);
+	  
+	    View  view = (LinearLayout) getActivity().getLayoutInflater()
+	        .inflate(R.layout.dialog_quize_records_with_net, null);
+	
+	    ListView lvQuizeDialogToptenPlayers=(ListView) view.findViewById(R.id.lvQuizeDialogToptenPlayers);
+	    
+	    TextView tvQuizeDialogUrrecordDate=(TextView) view.findViewById(R.id.tvQuizeDialogUrrecordDate);
+	    TextView tvQuizeDialogUrrecordUserName=(TextView) view.findViewById(R.id.tvQuizeDialogUrrecordUserName);
+	    TextView tvQuizeDialogUrrecordScore=(TextView) view.findViewById(R.id.tvQuizeDialogUrrecordScore);
+	    
+	    TextView tvQuizeDialogCurrentDate=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentDate);
+	    TextView tvQuizeDialogCurrentUserName=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentUserName);
+	    TextView tvQuizeDialogCurrentScore=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentScore);
+	    
+	    TextView tvQuizeDialogCongratulations=(TextView) view.findViewById(R.id.tvQuizeDialogCongratulations);
+	    
+	    
+	    tvQuizeDialogUrrecordDate.setText(userTopRecord.getQuizeRecordDate());
+	    tvQuizeDialogUrrecordUserName.setText(userTopRecord.getQuizeRecordUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
+	    tvQuizeDialogUrrecordScore.setText(userTopRecord.getQuizeRecordScore()+"");
+	    
+	    tvQuizeDialogCurrentDate.setText(userGameDateEnd);
+	    tvQuizeDialogCurrentUserName.setText(ParseUser.getCurrentUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
+	    tvQuizeDialogCurrentScore.setText(userGameScore+"");
+	    
+	    
+	    QuizeRecordAdapter quizeRecordAdapter= new QuizeRecordAdapter(getActivity());
+	    quizeRecordAdapter.addAll(topTenRecordsList);
+	    lvQuizeDialogToptenPlayers.setAdapter(quizeRecordAdapter);
+	    
+	    
+	    if (isCurrentScoreRecord(userGameScore,userTopRecord)) {
+	    	tvQuizeDialogCongratulations.setText(congratulationsUrScoreNewRecord);
+		}
+	    
+	    adb.setView(view);
+	    adb.setPositiveButton(dialBtnPosetiveRestartGame, new Dialog.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if(which==Dialog.BUTTON_POSITIVE){
+					refreshQuizeGame();
+				}
+			}
+		});
+		adb.show();
+	}
+	
+	private boolean isCurrentScoreRecord(int score,QuizeRecordData record){
+		if (record.getQuizeRecordScore()<=score) {
+			return true;
+		}
+		return false;
 		
 	}
+	
+	
 	
 	public void refreshQuizeGame(){
 		
 		quizeGame=new QuizeGame(getActivity(), quizeGameDefaultLives, parseQuoteDataManager);
 		quizeGame.setQuizeGameProgressListener(this);
 		quizeGame.startGame();
-		
-		
-		
+
 	}
 
 

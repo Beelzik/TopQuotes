@@ -1,5 +1,7 @@
 package com.beelzik.topquotes.ui.activity;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -11,11 +13,16 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
+import com.beelzik.topquotes.data.QuoteData;
+import com.beelzik.topquotes.parse.FindQuotesCallback;
 import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 import com.beelzik.topquotes.util.GooglePlusClient;
 import com.beelzik.topquotes.util.GooglePlusClientListener;
 import com.google.android.gms.common.ConnectionResult;

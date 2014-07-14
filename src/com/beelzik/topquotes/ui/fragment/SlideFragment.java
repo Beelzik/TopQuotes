@@ -184,7 +184,7 @@ public class SlideFragment extends Fragment{
 					  tvSlideUserWut.setText(quote.getUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
 					  imageLoader.displayImage(quote.getUser().getString(UserData.COLUMN_USER_AVATA_URL),
 								ivSlideUserWut, options, animateFirstListener);
-					  parseQuoteDataManager.checkQuoteLikeStatus(ibtnSlideLike,quote);
+					  parseQuoteDataManager.checkQuoteLikeStatus(ibtnSlideLike,quote,0);
 				
 			}else{
 				

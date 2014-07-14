@@ -13,7 +13,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ListView;
+import android.widget.AbsListView.OnScrollListener;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
@@ -37,6 +39,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 	private int wutFragment;
 	SharedPreferences sp;
 	int langFlag;
+	String titleName;
 	
 	public static TitleQuotesFragment newInstance(int sectionNumber) {
 		TitleQuotesFragment fragment = new TitleQuotesFragment();
@@ -116,16 +119,11 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 	    langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
 		swTitleCont.setRefreshing(true);
-			List<String> titleName=parseQuoteDataManager.getTitleList(langFlag);
-			
+
+		titleName=parseQuoteDataManager.getTitleList(langFlag).get(wutFragment);
 		
-		
-			for (String string : titleName) {
-				Log.d(GlobConst.LOG_TAG,"title name: "+string);
-			}
-		
-			Log.d(GlobConst.LOG_TAG,"cur title name: "+titleName.get(wutFragment));
-			parseQuoteDataManager.findTitleQuotes(20,0,titleName.get(wutFragment),langFlag,new FindQuotesCallback() {
+		Log.d(GlobConst.LOG_TAG,"cur title name: "+titleName);
+		parseQuoteDataManager.findTitleQuotes(20,0,titleName,langFlag,new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -134,9 +132,64 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 						quotesAdapter.addAll(quotesList);
 						quotesAdapter.notifyDataSetChanged();
 						swTitleCont.setRefreshing(false);
+						
+						QuoteTitleListScrollListener scrollListener=new QuoteTitleListScrollListener(20);
+						lvTitleQuotes.setOnScrollListener(scrollListener);
 					}
 				}
 			});
 	}
+	
+	private class QuoteTitleListScrollListener implements OnScrollListener{
+		
+		int count;
+		int step=10;
+		int langFlag;
+		
+		int pastTotalCount=0;
+		
+		
+		public QuoteTitleListScrollListener(int count) {
+			this.count=count;
+		}
+		
+		public void setStep(int step) {
+			this.step = step;
+		}
+		@Override
+		public void onScrollStateChanged(AbsListView view, int scrollState) {
+		}
+
+		@Override
+		public void onScroll(AbsListView view, int firstVisibleItem,
+				int visibleItemCount, final int totalItemCount) {
+			if(((firstVisibleItem+visibleItemCount)==totalItemCount) && pastTotalCount!=totalItemCount){
+				pastTotalCount=totalItemCount;
+				langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
+				
+				parseQuoteDataManager.findAllTitlesQuotes(step, count, langFlag, new FindQuotesCallback() {
+					
+					@Override
+					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
+						
+					}
+				});
+				
+				parseQuoteDataManager.findTitleQuotes(step, count, titleName, totalItemCount, new FindQuotesCallback() {
+					
+					@Override
+					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
+						quotesAdapter.addAll(quotesList);
+						quotesAdapter.notifyDataSetChanged();
+						Log.d(GlobConst.LOG_TAG, "quotesStreamListAdapter.getCount(): "+quotesAdapter.getCount());
+					}
+				});
+				
+				count+=step;
+			}
+		}
+		
+	}
+			
 }
 

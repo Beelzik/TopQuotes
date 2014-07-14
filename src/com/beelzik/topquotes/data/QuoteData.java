@@ -18,6 +18,8 @@ public class QuoteData extends ParseObject{
 	public final static String COLUMN_QUOTE_TYPE="type";
 	public final static String COLUMN_QUOTE_USER="user";
 	public final static String COLUMN_QUOTE_LIKES="likes";
+	public final static String COLUMN_QUOTE_CREATED_AT="createdAt";
+	public final static String COLUMN_QUOTE_UPDATED_AT="updatedAt";
 	
 	private boolean liked=false;
 	

@@ -55,7 +55,7 @@ public class MainActivity extends ActionBarActivity implements
 		
 		parseQuoteDataManager=((TopQuotesApplication) this.
 				getApplication()).getParseQuoteDataManager();
-		//parseQuoteDataManager.syncLocaleDataWithParse();
+		parseQuoteDataManager.syncAllLikesFromParse();
 		
 		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.navigation_drawer);

@@ -47,12 +47,13 @@ public class ParseQuoteDataManager {
 	private final static int PARSE_TYPE_MODERATED=1;
 	private final static int PARSE_TYPE_DEFAULT=0;
 	
-	private final static int PARSE_LIKE_EXEC_THREAD_POOL=1;
+	private final static int PARSE_LIKE_EXEC_THREAD_POOL=10;
 	private final static int PARSE_GLOB_EXEC_THREAD_POOL=20;
 	
 	private final static int MAX_PARSE_QUERY_LIMIT=20;
 	private final static String PIN_TOP_QUTE="Top_quote";
 	private final static String PIN_TITLE_NAME="Title_name";
+	private final static String PIN_USER_LIKES="User_likes";
 	
 	public final static String DEFAULT_PARSE_USER_PASSWORD="0000";
 	
@@ -275,7 +276,8 @@ public class ParseQuoteDataManager {
 				
 					userLikes.add(user);
 					targetQuote.setLiked(!targetQuote.isLiked());
-					targetQuote.saveInBackground(new SaveCallback() {
+					targetQuote.saveInBackground();
+					targetQuote.pinInBackground(PIN_USER_LIKES, new SaveCallback() {
 						
 						@Override
 						public void done(ParseException e) {
@@ -292,7 +294,8 @@ public class ParseQuoteDataManager {
 		
 					userLikes.remove(user);
 					targetQuote.setLiked(!targetQuote.isLiked());
-					targetQuote.saveInBackground(new SaveCallback() {
+					targetQuote.saveInBackground();
+					targetQuote.unpinInBackground(PIN_USER_LIKES, new DeleteCallback() {
 						
 						@Override
 						public void done(ParseException e) {
@@ -539,8 +542,8 @@ public class ParseQuoteDataManager {
 	}
 	
 	
-	public void findQuotes(int limit,int skipedQuote,final String userId,final String titleName,final int langFlag,final FindQuotesCallback callback){
-		final boolean haveNetCon=checkNetConection();
+	public void findQuotesOld(int limit,int skipedQuote,final String userId,final String titleName,final int langFlag,final FindQuotesCallback callback){
+				final boolean haveNetCon=checkNetConection();
 		
 		
 				final String pinTag;
@@ -562,16 +565,6 @@ public class ParseQuoteDataManager {
 				}
 				
 				pinTag=PIN_TOP_QUTE+langFlag;
-				
-				/*if(titleName==null){
-					if(GlobConst.DEBUG){
-						Log.d(GlobConst.LOG_TAG, "titleName.equals(null)");
-					}
-					pinTag=PIN_TOP_QUTE+langFlag;
-				}else{
-					pinTag=titleName+langFlag;
-				}*/
-				
 				
 				if (!haveNetCon) {
 					query.fromPin(pinTag);
@@ -598,12 +591,101 @@ public class ParseQuoteDataManager {
 	}
 	
 	
+	public void findQuotes(int limit,int skipedQuote,final String userId,final String titleName,final int langFlag,final FindQuotesCallback callback){
+		final boolean haveNetCon=checkNetConection();
+		FindQuoteTask findQuoteTask=new FindQuoteTask(limit, skipedQuote, userId, titleName, langFlag, haveNetCon, callback);
+		findQuoteTask.executeOnExecutor(execService);
+		}
+	
+	
+	private class FindQuoteTask extends AsyncTask<Void, Void, Integer>{
+		
+		int limit;
+		int skipedQuote;
+		String userId;
+		String titleName;
+		int langFlag;
+		FindQuotesCallback callback;
+		boolean haveNetConnection;
+		List <QuoteData> inQuotes;
+		
+		public FindQuoteTask(int limit, int skipedQuote, String userId,
+				String titleName, int langFlag, boolean haveNetConnection, FindQuotesCallback callback) {
+			super();
+			this.limit = limit;
+			this.skipedQuote = skipedQuote;
+			this.userId = userId;
+			this.titleName = titleName;
+			this.langFlag = langFlag;
+			this.callback = callback;
+			this.haveNetConnection = haveNetConnection;
+		}
+		
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			
+			try {
+				
+			final String pinTag;
+			ParseQuery<QuoteData> query=ParseQuery.getQuery(QuoteData.class);
+			query.whereEqualTo(QuoteData.COLUMN_QUOTE_LANGUAGE, langFlag);
+			query.setLimit(limit);
+			query.setSkip(skipedQuote);
+			query.orderByDescending(QuoteData.COLUMN_QUOTE_CREATED_AT);
+			query.include(QuoteData.COLUMN_QUOTE_TITLE);
+			query.include(QuoteData.COLUMN_QUOTE_USER);
+			query.whereEqualTo(QuoteData.COLUMN_QUOTE_TYPE, PARSE_TYPE_MODERATED);
+			
+			
+			if(titleName!=null){
+				query.whereMatchesQuery(QuoteData.COLUMN_QUOTE_TITLE, getTitleSubQuery(titleName));
+			}
+			
+			if (userId!=null) {
+				query.whereMatchesQuery(QuoteData.COLUMN_QUOTE_USER, getUserSubQuery(userId));
+			}
+			
+			pinTag=PIN_TOP_QUTE+langFlag;
+			
+			if (!haveNetConnection) {
+				query.fromPin(pinTag);
+				Log.d(GlobConst.LOG_TAG, "!haveNetCon query.fromPin: "+pinTag);
+			}
+		
+			
+			
+			
+				inQuotes=query.find();
+				
+				if (haveNetConnection && (titleName==null)) {
+					pinQuoteToLocaleDataStore(inQuotes, pinTag);
+				}
+				
+				
+				return FindQuotesCallback.FIND_RESULT_OK;
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return FindQuotesCallback.FIND_RESULT_ERROR;
+			}
+			
+		}
+		@Override
+		protected void onPostExecute(Integer result) {
+			if(FindQuotesCallback.FIND_RESULT_OK==result){
+				callback.findQuotesCallback(inQuotes,FindQuotesCallback.FIND_RESULT_OK);
+			}else{
+				callback.findQuotesCallback(inQuotes,FindQuotesCallback.FIND_RESULT_ERROR);
+			}
+		}
+	}
+	
 	
 	
 	
 	private ParseQuery<TitleData>  getTitleSubQuery(String titleName){
 		ParseQuery<TitleData> subQ= ParseQuery.getQuery(TitleData.class);
-		Log.d(GlobConst.LOG_TAG, " titleName: "+ titleName);
+		
 		subQ.whereEqualTo(TitleData.COLUMN_TITLE_NAME, titleName);	
 		return subQ;
 	}
@@ -612,7 +694,7 @@ public class ParseQuoteDataManager {
 	
 	private ParseQuery<ParseUser>  getUserSubQuery(String userId){
 		ParseQuery<ParseUser> subQ= ParseQuery.getQuery(ParseUser.class);
-		Log.d(GlobConst.LOG_TAG, " userId: "+ userId);
+		
 		subQ.whereEqualTo(UserData.COLUMN_USER_ID, userId);	
 		return subQ;
 	}
@@ -655,8 +737,8 @@ public class ParseQuoteDataManager {
 				
 		
 				if (!haveNetCon) {
-					//query.fromPin(pinTag);
-					//Log.d(GlobConst.LOG_TAG, "!haveNetCon query.fromPin: "+pinTag);
+					query.fromPin(PIN_TOP_QUTE+langFlag);
+					
 				}
 			
 				query.findInBackground(new FindCallback<QuoteData>() {
@@ -680,43 +762,56 @@ public class ParseQuoteDataManager {
 		@Override
 		public void done(int count, ParseException e) {
 				if(e==null){
+					
+					Log.d(GlobConst.LOG_TAG, "findRandomQuote count: "+count);
 					Random random=new Random();
 					int skipedQuotes=random.nextInt(count);
 					int targetQuotePosition=skipedQuotes+1;
 								
-					findAllTitlesQuotes(targetQuotePosition,
-						skipedQuotes, langFlag,new FindQuotesCallback() {
-											
-							@Override
-							public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
-									if (FindRandomQuoteCallback.FIND_RESULT_OK==resultCode) {
-										if(quotesList.size()>0){
-											final int FIRST=0;
-											QuoteData quote=quotesList.get(FIRST);
-											callback.findRandomQuoteCallback(quote, FindRandomQuoteCallback.FIND_RESULT_OK);
-										}else{
-											callback.findRandomQuoteCallback(null, FindRandomQuoteCallback.FIND_RESULT_ERROR);
-										}
+					
+					FindQuoteTask findQuoteTask=new FindQuoteTask(targetQuotePosition, skipedQuotes, null,null, langFlag, false, new FindQuotesCallback() {
+						
+						@Override
+						public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
+								if (FindRandomQuoteCallback.FIND_RESULT_OK==resultCode) {
+									if(quotesList.size()>0){
+										final int FIRST=0;
+										QuoteData quote=quotesList.get(FIRST);
+										callback.findRandomQuoteCallback(quote, FindRandomQuoteCallback.FIND_RESULT_OK);
 									}else{
 										callback.findRandomQuoteCallback(null, FindRandomQuoteCallback.FIND_RESULT_ERROR);
 									}
-												
-							}
-						});
+								}else{
+									callback.findRandomQuoteCallback(null, FindRandomQuoteCallback.FIND_RESULT_ERROR);
+								}
+											
+						}
+					});
+					findQuoteTask.executeOnExecutor(execService);
 					}else{
 						callback.findRandomQuoteCallback(null, FindRandomQuoteCallback.FIND_RESULT_ERROR);	
 					}
+				
+					
 							
 		}
 	});
 	}
 	
 	public void getQuotesCount(int langFlag, CountCallback callback){
+		
+		boolean haveNetCon=checkNetConection();
+		
 		ParseQuery<QuoteData> query=ParseQuery.getQuery(QuoteData.class);
 		
+		
+			query.fromPin(PIN_TOP_QUTE+langFlag);
+		
+		
+		query.whereEqualTo(QuoteData.COLUMN_QUOTE_TYPE, PARSE_TYPE_MODERATED);
 		query.whereEqualTo(QuoteData.COLUMN_QUOTE_LANGUAGE, langFlag);
 		query.countInBackground(callback);
-	}	
+	}
 	
 	public void findAllTitleName(final int langFlag,final FindTitlesNameCallback callback){
 		 final Handler handler=new Handler(){
@@ -811,12 +906,12 @@ public class ParseQuoteDataManager {
 		Log.d(GlobConst.LOG_TAG, "objects.size(): "+inTitlesList.size());
 		
 		if(inTitlesList!=null){
-		ParseObject.unpinAllInBackground(tag,new DeleteCallback() {
+	/*	ParseObject.unpinAllInBackground(tag,new DeleteCallback() {
 			
 			@Override
 			public void done(ParseException e) {
 				
-				if(e==null){
+				if(e==null){*/
 				ParseObject.pinAllInBackground(tag, inTitlesList, new SaveCallback() {
 					
 					@Override
@@ -829,21 +924,17 @@ public class ParseQuoteDataManager {
 						
 					}
 				} );
-				}else{
+			/*	}else{
 					Log.d(GlobConst.LOG_TAG,"unping error: "+e.getMessage());
 				}
 			}
-		});
+		});*/
 		}
 	}
 	
 
 	public void pinQuoteToLocaleDataStore(final List<QuoteData> inQuotes, final String tag){
-		
-		Log.d(GlobConst.LOG_TAG, "pinToLocaleDataStore"+tag);
-		
-		Log.d(GlobConst.LOG_TAG, "objects.size(): "+inQuotes.size());
-		
+				
 		if(inQuotes!=null){
 				ParseObject.pinAllInBackground(tag, inQuotes, new SaveCallback() {
 					
@@ -861,12 +952,13 @@ public class ParseQuoteDataManager {
 		}
 	}
 	
-	public void checkQuoteLikeStatusOld(final ImageButton ibtnLikeStatus,final QuoteData quote){
+	/*public void checkQuoteLikeStatusOld(final ImageButton ibtnLikeStatus,final QuoteData quote){
 		String quoteId=quote.getQuoteId();
 		Log.d(GlobConst.LOG_TAG,"checkQuoteLikeStatus quoteId: "+quoteId);
 		ParseRelation<QuoteData> testQuote=ParseUser.getCurrentUser().getRelation(UserData.COLUMN_USER_RELATION);
 		ParseQuery<QuoteData> qtestQuot=testQuote.getQuery();
 		qtestQuot.whereEqualTo(QuoteData.COLUMN_QUOTE_ID, quoteId);
+
 		qtestQuot.findInBackground(new FindCallback<QuoteData>() {
 
 			@Override
@@ -887,12 +979,60 @@ public class ParseQuoteDataManager {
 				}			
 			}	
 		});	
+	}*/
+	
+	public void syncAllLikesFromParse(){
+		ParseRelation<QuoteData> testQuote=ParseUser.getCurrentUser().getRelation(UserData.COLUMN_USER_RELATION);
+		ParseQuery<QuoteData> qtestQuot=testQuote.getQuery();
+		
+		qtestQuot.findInBackground(new FindCallback<QuoteData>() {
+			
+			@Override
+			public void done(final List<QuoteData> objects, ParseException e) {
+				QuoteData.unpinAllInBackground(PIN_USER_LIKES, new DeleteCallback() {
+					
+					@Override
+					public void done(ParseException e) {
+						QuoteData.pinAllInBackground(PIN_USER_LIKES, objects,new SaveCallback() {
+							
+							@Override
+							public void done(ParseException e) {
+								for (QuoteData quoteData : objects) {
+									Log.d(GlobConst.LOG_TAG, "liked: "+quoteData.getQuote());
+								}
+								Log.d(GlobConst.LOG_TAG, "size: "+objects.size());
+								
+								
+								ParseQuery< QuoteData> query=ParseQuery.getQuery(QuoteData.class);
+								query.fromPin(PIN_USER_LIKES);
+								query.findInBackground(new FindCallback<QuoteData>() {
+									
+									@Override
+									public void done(List<QuoteData> objects, ParseException e) {
+										for (QuoteData quoteData : objects) {
+											Log.d(GlobConst.LOG_TAG, "from pin: "+quoteData.getQuote());
+										}
+										Log.d(GlobConst.LOG_TAG, "pin size: "+objects.size());
+									}
+								});
+							}
+						});
+					}
+				});
+				
+				
+				
+				
+			}
+		});
+		
+		
 	}
 	
-	public static void checkQuoteLikeStatus(final ImageButton ibtnLikeStatus,final QuoteData quote){
-		LikeTask likeTask=new LikeTask(ibtnLikeStatus, quote);
 	
-		likeTask.executeOnExecutor(execLikesService);
+	public void checkQuoteLikeStatus(final ImageButton ibtnLikeStatus,final QuoteData quote, int position){
+	LikeTask likeTask=new LikeTask(ibtnLikeStatus, quote,position);
+	likeTask.executeOnExecutor(execLikesService);
 	}
 	
 	private static class LikeTask extends AsyncTask<Void, Void, Integer>{
@@ -900,61 +1040,70 @@ public class ParseQuoteDataManager {
 		WeakReference<ImageButton> ibtnLikeStatusWeak;
 		WeakReference<QuoteData> quoteWeak;
 		
+		int position;
 		final static int RESULT_OK_LIKED=0;
 		final static int RESULT_OK_UNLIKE=1;
 		final static int RESULT_ERROR=2;
 		
-		public LikeTask(ImageButton ibtnLikeStatus,QuoteData quote) {
+		public LikeTask(ImageButton ibtnLikeStatus,QuoteData quote, int position) {
 			ibtnLikeStatusWeak=new WeakReference<ImageButton>(ibtnLikeStatus);
-			
 			this.quoteWeak=new WeakReference<QuoteData>(quote);
+			this.position=position;
 		}
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
 			
+			if (isCancelled()) {
+				return RESULT_ERROR;
+			}
 			try {
-			String quoteId=quoteWeak.get().getQuoteId();
-			Log.d(GlobConst.LOG_TAG,"checkQuoteLikeStatus quoteId: "+quoteId);
-			ParseRelation<QuoteData> testQuote=ParseUser.getCurrentUser().getRelation(UserData.COLUMN_USER_RELATION);
-			ParseQuery<QuoteData> qtestQuot=testQuote.getQuery();
-			qtestQuot.whereEqualTo(QuoteData.COLUMN_QUOTE_ID, quoteId);
-			List<QuoteData> likedQuotes;
+			ParseQuery< QuoteData> query=ParseQuery.getQuery(QuoteData.class);
+			query.fromPin(PIN_USER_LIKES);
+			query.whereEqualTo(QuoteData.COLUMN_QUOTE_ID,quoteWeak.get().getQuoteId());
+			List<QuoteData> likedQuotes=query.find();
 			
-			likedQuotes = qtestQuot.find();
-			
-			
+			if(quoteWeak.get()!=null){
 			if(likedQuotes.size()>0){
+				
 				quoteWeak.get().setLiked(true);
 				return RESULT_OK_LIKED;
+				
 			}else{
-			
 				quoteWeak.get().setLiked(false);
 				return RESULT_OK_UNLIKE;
+				
 			}
-			
+			}
 			
 			} catch (ParseException e) {
 				e.printStackTrace();
 				return RESULT_ERROR;
 			}
 			
-
+			return RESULT_ERROR;
 			
 			
 		}
 		
 		@Override
 		protected void onPostExecute(Integer result) {
+			super.onPostExecute(result);
 			if(isCancelled()){
 				return;
 			}
 			switch(result){
 			case RESULT_OK_LIKED:
-				ibtnLikeStatusWeak.get().setImageDrawable(context.getResources().getDrawable(R.drawable.ic_liked));
+				if (ibtnLikeStatusWeak.get()!=null) {
+					ibtnLikeStatusWeak.get().setImageDrawable(context.getResources().getDrawable(R.drawable.ic_liked));
+				}
+			
 				break;
 			case RESULT_OK_UNLIKE:
-				ibtnLikeStatusWeak.get().setImageDrawable(context.getResources().getDrawable(R.drawable.ic_like));
+				if (ibtnLikeStatusWeak.get()!=null) {
+					ibtnLikeStatusWeak.get().setImageDrawable(context.getResources().getDrawable(R.drawable.ic_like));
+				}
+			
 				break;
 			case RESULT_ERROR:
 				break;

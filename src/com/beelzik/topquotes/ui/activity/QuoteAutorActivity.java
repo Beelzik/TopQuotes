@@ -23,7 +23,9 @@ import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.AbsListView;
 import android.widget.ListView;
+import android.widget.AbsListView.OnScrollListener;
 
 public class QuoteAutorActivity extends ActionBarActivity implements OnNavigationListener{
 
@@ -127,6 +129,11 @@ public class QuoteAutorActivity extends ActionBarActivity implements OnNavigatio
 						quotesStreamListAdapter.clean();
 						quotesStreamListAdapter.addAll(quotesList);
 						quotesStreamListAdapter.notifyDataSetChanged();
+						
+						OnUserQuoteScrollListener scrollListener=
+								new OnUserQuoteScrollListener(20, userId, sp, parseQuoteDataManager, quotesStreamListAdapter);
+						lvAutor.setOnScrollListener(scrollListener);
+					
 					}
 					
 				}
@@ -143,6 +150,6 @@ public class QuoteAutorActivity extends ActionBarActivity implements OnNavigatio
 		return true;
 	}
 	
-	
+
 	
 }

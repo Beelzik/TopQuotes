@@ -88,7 +88,6 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 	
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
 		return data.size();
 	}
 
@@ -99,7 +98,6 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 
 	@Override
 	public long getItemId(int position) {
-		// TODO Auto-generated method stub
 		return position;
 	}
 
@@ -112,9 +110,8 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 	public View getView(int position, View view, ViewGroup parent) {
 		
 		final QuoteData quote= getItem(position);
-		//Log.d(GlobConst.LOG_TAG, "quote.getQuoteId(): "+quote.getQuoteId());
-	
 		final ViewHolder holder;
+		
 		if (view==null) {
 			view=inflater.inflate(R.layout.list_item_stream_quote, parent, false);
 			holder= new ViewHolder();
@@ -137,7 +134,6 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 		holder.tvListSerialName.setText(quote.getTitle().getTitleName());
 		holder.tvListNumSeason.setText(quote.getSeason()+"");
 		holder.tvListNumSeries.setText(quote.getEpisode()+"");
-		//Log.d(GlobConst.LOG_TAG, "quote.getUser(): "+quote.getUser());
 		holder.tvListUserWut.setText(quote.getUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
 		
 		holder.ibtnListShare.setOnClickListener(new QuoteOnClick(view,position) {
@@ -181,28 +177,9 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 				}
 			}
 		});
-		
-		
-		
-		if(quote.isLiked()){
-			holder.ibtnListStreamLike.setImageDrawable(ctx.getResources().getDrawable(R.drawable.ic_liked));
-		}else {
-			holder.ibtnListStreamLike.setImageDrawable(ctx.getResources().getDrawable(R.drawable.ic_like));
-			parseQuoteDataManager.checkQuoteLikeStatus(holder.ibtnListStreamLike,quote);
-		}
 	
-		
-	//	Log.d(GlobConst.LOG_TAG, "quote.isLiked(): "+quote.isLiked());
-	/*	if(quote.isLiked()){
-			
-					holder.ibtnListStreamLike.setImageDrawable(ctx.getResources().getDrawable(R.drawable.ic_liked));
-		}else{
-					holder.ibtnListStreamLike.setImageDrawable(ctx.getResources().getDrawable(R.drawable.ic_like));
-		}*/
-		
-		
-		
-
+		parseQuoteDataManager.checkQuoteLikeStatus(holder.ibtnListStreamLike,quote, position);
+	
 		imageLoader.displayImage(quote.getUser().getString(UserData.COLUMN_USER_AVATA_URL),
 				holder.ivListStreamUserAvatar, options, animateFirstListener);
 		

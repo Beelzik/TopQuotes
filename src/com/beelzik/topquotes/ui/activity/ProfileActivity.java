@@ -15,6 +15,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -36,6 +38,8 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.parse.CountCallback;
+import com.parse.ParseException;
 import com.parse.ParseUser;
 
 public class ProfileActivity extends ActionBarActivity implements OnClickListener, OnNavigationListener{
@@ -202,6 +206,14 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 	}
 	
 	public void findQuotes(){
+		
+		parseQuoteDataManager.getQuotesCount(langFlag,new CountCallback() {
+			
+			@Override
+			public void done(int count, ParseException e) {
+				tvProfilePublishedQuotes.setText(count+"");
+			}
+		});
 		 parseQuoteDataManager.findUserQuotes(20,0,userId, langFlag, new FindQuotesCallback() {
 				
 				@Override
@@ -214,8 +226,13 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 						quotesStreamListAdapter.clean();
 						quotesStreamListAdapter.addAll(quotesList);
 						quotesStreamListAdapter.notifyDataSetChanged();
+						Log.d(GlobConst.LOG_TAG, "autor quote.size(): "+quotesList.size());
 						
-						tvProfilePublishedQuotes.setText(quotesList.size()+"");
+						OnUserQuoteScrollListener listener= new OnUserQuoteScrollListener(20, 
+								userId,sp,parseQuoteDataManager, quotesStreamListAdapter);
+						lvProfileQuotes.setOnScrollListener(listener);
+						
+						
 					}
 					
 				}
@@ -231,5 +248,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 		}
 		return true;
 	}
+	
+	
 
 }

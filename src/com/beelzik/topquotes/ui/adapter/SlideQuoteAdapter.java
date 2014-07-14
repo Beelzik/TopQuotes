@@ -14,7 +14,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 
-public class SlideQuoteAdapter extends FragmentStatePagerAdapter {
+public class SlideQuoteAdapter extends FragmentPagerAdapter {
 
 
 	ParseQuoteDataManager  parseQuoteDataManager;

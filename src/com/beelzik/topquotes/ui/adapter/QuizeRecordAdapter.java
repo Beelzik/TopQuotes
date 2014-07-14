@@ -14,6 +14,7 @@ import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.data.QuizeRecordData;
 import com.beelzik.topquotes.data.QuoteData;
 import com.beelzik.topquotes.data.UserData;
+import com.parse.ParseUser;
 
 public class QuizeRecordAdapter extends BaseAdapter {
 
@@ -84,7 +85,8 @@ public class QuizeRecordAdapter extends BaseAdapter {
 		
 		holder.tvQuizePlace.setText((position+1)+"");
 		holder.tvQuizeDate.setText(record.getQuizeRecordDate());
-		holder.tvQuizeUserName.setText(record.getQuizeRecordUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
+		ParseUser user=record.getQuizeRecordUser();
+		holder.tvQuizeUserName.setText(user.getString(UserData.COLUMN_USER_NAME_DISPLAY));
 		holder.tvQuizeScore.setText(record.getQuizeRecordScore()+"");
 		
 		return view;

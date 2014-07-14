@@ -271,42 +271,72 @@ public class ParseQuoteDataManager {
 				ParseRelation<ParseUser> userLikes=targetQuote.getRelation(QuoteData.COLUMN_QUOTE_LIKES);
 				
 				if (!targetQuote.isLiked()) {
-					quoteLikedBy.add(targetQuote);
-					
+				quoteLikedBy.add(targetQuote);
+				userLikes.add(user);
 				
-					userLikes.add(user);
-					targetQuote.setLiked(!targetQuote.isLiked());
-					targetQuote.saveInBackground();
-					targetQuote.pinInBackground(PIN_USER_LIKES, new SaveCallback() {
+				user.saveInBackground(new SaveCallback() {
+					
+					@Override
+					public void done(ParseException e) {
 						
-						@Override
-						public void done(ParseException e) {
-							if (e==null) {
-								if(likedCallback!=null){
-									likedCallback.onQuoteLikedCallback(view,targetQuote.isLiked());
-								}
+						targetQuote.setLiked(!targetQuote.isLiked());
+						targetQuote.saveInBackground(new SaveCallback() {
+							
+							@Override
+							public void done(ParseException e) {
+								targetQuote.pinInBackground(PIN_USER_LIKES, new SaveCallback() {
+									
+									@Override
+									public void done(ParseException e) {
+										if (e==null) {
+											if(likedCallback!=null){
+												likedCallback.onQuoteLikedCallback(view,targetQuote.isLiked());
+											}
+										}
+									}
+								});
 							}
-						}
-					});
-					Log.d(GlobConst.LOG_TAG, "add leke");
+						});
+						
+						Log.d(GlobConst.LOG_TAG, "add leke");
+						
+						
+					}
+				});
+				
+					
 				}else{
 					quoteLikedBy.remove(targetQuote);
-		
 					userLikes.remove(user);
-					targetQuote.setLiked(!targetQuote.isLiked());
-					targetQuote.saveInBackground();
-					targetQuote.unpinInBackground(PIN_USER_LIKES, new DeleteCallback() {
+					
+					user.saveInBackground(new SaveCallback() {
 						
 						@Override
 						public void done(ParseException e) {
-							if (e==null) {
-								if(likedCallback!=null){
-									likedCallback.onQuoteLikedCallback(view,targetQuote.isLiked());
+							
+							targetQuote.setLiked(!targetQuote.isLiked());
+							targetQuote.saveInBackground(new SaveCallback() {
+								
+								@Override
+								public void done(ParseException e) {
+									targetQuote.unpinInBackground(PIN_USER_LIKES, new DeleteCallback() {
+										
+										@Override
+										public void done(ParseException e) {
+											if (e==null) {
+												if(likedCallback!=null){
+													likedCallback.onQuoteLikedCallback(view,targetQuote.isLiked());
+												}
+											}
+										}
+									});
 								}
-							}
+							});
+							
+							Log.d(GlobConst.LOG_TAG, "del like ");
 						}
 					});
-					Log.d(GlobConst.LOG_TAG, "del like ");
+					
 				}
 		
 				

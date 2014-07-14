@@ -31,6 +31,7 @@ import com.beelzik.topquotes.ui.activity.OnUserAuthListener;
 import com.parse.CountCallback;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.LogInCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -263,86 +264,97 @@ public class ParseQuoteDataManager {
 	Log.d(GlobConst.LOG_TAG, "likeQuoteInParse \n"+
 	"quote: "+targetQuote.getQuote()+
 	"\nquoteId:"+targetQuote.getQuoteId());
+	
+	
+	ParseQuery< QuoteData> query=ParseQuery.getQuery(QuoteData.class);
+	query.fromPin(PIN_USER_LIKES);
+	query.whereEqualTo(QuoteData.COLUMN_QUOTE_ID,targetQuote.getQuoteId());
+	query.getFirstInBackground(new GetCallback<QuoteData>() {
 		
-				ParseUser user=ParseUser.getCurrentUser();
-				
-				ParseRelation<QuoteData> quoteLikedBy=user.getRelation(UserData.COLUMN_USER_RELATION);
-
-				ParseRelation<ParseUser> userLikes=targetQuote.getRelation(QuoteData.COLUMN_QUOTE_LIKES);
-				
-				if (!targetQuote.isLiked()) {
-				quoteLikedBy.add(targetQuote);
-				userLikes.add(user);
-				
-				user.saveInBackground(new SaveCallback() {
-					
-					@Override
-					public void done(ParseException e) {
-						
-						targetQuote.setLiked(!targetQuote.isLiked());
-						targetQuote.saveInBackground(new SaveCallback() {
-							
-							@Override
-							public void done(ParseException e) {
-								targetQuote.pinInBackground(PIN_USER_LIKES, new SaveCallback() {
-									
-									@Override
-									public void done(ParseException e) {
-										if (e==null) {
-											if(likedCallback!=null){
-												likedCallback.onQuoteLikedCallback(view,targetQuote.isLiked());
-											}
-										}
-									}
-								});
-							}
-						});
-						
-						Log.d(GlobConst.LOG_TAG, "add leke");
-						
-						
-					}
-				});
-				
-					
+		@Override
+		public void done(QuoteData object, ParseException e) {
+			
+		
+				if(object!=null){
+					unlikeQuote(targetQuote, likedCallback, view);
 				}else{
-					quoteLikedBy.remove(targetQuote);
-					userLikes.remove(user);
-					
-					user.saveInBackground(new SaveCallback() {
-						
-						@Override
-						public void done(ParseException e) {
-							
-							targetQuote.setLiked(!targetQuote.isLiked());
-							targetQuote.saveInBackground(new SaveCallback() {
-								
-								@Override
-								public void done(ParseException e) {
-									targetQuote.unpinInBackground(PIN_USER_LIKES, new DeleteCallback() {
-										
-										@Override
-										public void done(ParseException e) {
-											if (e==null) {
-												if(likedCallback!=null){
-													likedCallback.onQuoteLikedCallback(view,targetQuote.isLiked());
-												}
-											}
-										}
-									});
-								}
-							});
-							
-							Log.d(GlobConst.LOG_TAG, "del like ");
-						}
-					});
-					
+					likeQuote(targetQuote, likedCallback, view);
 				}
+		
+			
+			
+		}
+	});
+	
+		
 		
 				
 }
 
+private void likeQuote(final QuoteData targetQuote,final OnQuoteLikedCallback likedCallback,final View view){
+	ParseUser user=ParseUser.getCurrentUser();
+	
+	ParseRelation<QuoteData> quoteLikedBy=user.getRelation(UserData.COLUMN_USER_RELATION);
 
+	ParseRelation<ParseUser> userLikes=targetQuote.getRelation(QuoteData.COLUMN_QUOTE_LIKES);
+	
+	quoteLikedBy.add(targetQuote);
+	userLikes.add(user);
+	
+	user.saveInBackground();
+	
+	//targetQuote.setLiked(!targetQuote.isLiked());
+	targetQuote.saveInBackground();
+	
+	Log.d(GlobConst.LOG_TAG, "add leke");
+	
+	targetQuote.pinInBackground(PIN_USER_LIKES, new SaveCallback() {
+		
+		@Override
+		public void done(ParseException e) {
+			if (e==null) {
+				if(likedCallback!=null){
+					likedCallback.onQuoteLikedCallback(view,true);
+				}
+			}
+		}
+	});
+	
+}
+
+private void unlikeQuote(final QuoteData targetQuote,final OnQuoteLikedCallback likedCallback, final View view){
+	ParseUser user=ParseUser.getCurrentUser();
+	
+	ParseRelation<QuoteData> quoteLikedBy=user.getRelation(UserData.COLUMN_USER_RELATION);
+
+	ParseRelation<ParseUser> userLikes=targetQuote.getRelation(QuoteData.COLUMN_QUOTE_LIKES);
+	
+	quoteLikedBy.remove(targetQuote);
+	userLikes.remove(user);
+	
+	user.saveInBackground();
+	
+	
+	//targetQuote.setLiked(!targetQuote.isLiked());
+	targetQuote.saveInBackground();
+	targetQuote.unpinInBackground(PIN_USER_LIKES, new DeleteCallback() {
+		
+		@Override
+		public void done(ParseException e) {
+			if (e==null) {
+				if(likedCallback!=null){
+					likedCallback.onQuoteLikedCallback(view,false);
+				}
+			}
+		}
+	});
+	
+	Log.d(GlobConst.LOG_TAG, "del like ");
+}
+	
+	
+	
+	
 	
 	public void addQuoteInParse(final String quote,String titleName,final int season,final int episode,final ParseUser user, final int lang){
 		
@@ -572,59 +584,11 @@ public class ParseQuoteDataManager {
 	}
 	
 	
-	public void findQuotesOld(int limit,int skipedQuote,final String userId,final String titleName,final int langFlag,final FindQuotesCallback callback){
-				final boolean haveNetCon=checkNetConection();
-		
-		
-				final String pinTag;
-				ParseQuery<QuoteData> query=ParseQuery.getQuery(QuoteData.class);
-				query.whereEqualTo(QuoteData.COLUMN_QUOTE_LANGUAGE, langFlag);
-				query.setLimit(limit);
-				query.setSkip(skipedQuote);
-				query.include(QuoteData.COLUMN_QUOTE_TITLE);
-				query.include(QuoteData.COLUMN_QUOTE_USER);
-				query.whereEqualTo(QuoteData.COLUMN_QUOTE_TYPE, PARSE_TYPE_MODERATED);
-				
-				
-				if(titleName!=null){
-					query.whereMatchesQuery(QuoteData.COLUMN_QUOTE_TITLE, getTitleSubQuery(titleName));
-				}
-				
-				if (userId!=null) {
-					query.whereMatchesQuery(QuoteData.COLUMN_QUOTE_USER, getUserSubQuery(userId));
-				}
-				
-				pinTag=PIN_TOP_QUTE+langFlag;
-				
-				if (!haveNetCon) {
-					query.fromPin(pinTag);
-					Log.d(GlobConst.LOG_TAG, "!haveNetCon query.fromPin: "+pinTag);
-				}
-			
-					query.findInBackground(new FindCallback<QuoteData>() {
-						
-						@Override
-						public void done(final List<QuoteData> inQuotes, ParseException e) {
-							if(e==null){
-								/*for (QuoteData quoteData : inQuotes) {
-									Log.d(GlobConst.LOG_TAG, "quoteData: "+quoteData.getQuote());
-								}*/
-								if (haveNetCon && (titleName==null)) {
-									pinQuoteToLocaleDataStore(inQuotes, pinTag);
-								}
-								callback.findQuotesCallback(inQuotes,FindQuotesCallback.FIND_RESULT_OK);
-								}else{
-									callback.findQuotesCallback(inQuotes,FindQuotesCallback.FIND_RESULT_ERROR);
-								}
-							}	
-					});
-	}
-	
 	
 	public void findQuotes(int limit,int skipedQuote,final String userId,final String titleName,final int langFlag,final FindQuotesCallback callback){
 		final boolean haveNetCon=checkNetConection();
 		FindQuoteTask findQuoteTask=new FindQuoteTask(limit, skipedQuote, userId, titleName, langFlag, haveNetCon, callback);
-		findQuoteTask.executeOnExecutor(execService);
+		findQuoteTask.execute();
 		}
 	
 	
@@ -689,6 +653,7 @@ public class ParseQuoteDataManager {
 				inQuotes=query.find();
 				
 				if (haveNetConnection && (titleName==null)) {
+					inQuotes =QuoteData.fetchAllIfNeeded(inQuotes);
 					pinQuoteToLocaleDataStore(inQuotes, pinTag);
 				}
 				
@@ -1012,51 +977,52 @@ public class ParseQuoteDataManager {
 	}*/
 	
 	public void syncAllLikesFromParse(){
-		ParseRelation<QuoteData> testQuote=ParseUser.getCurrentUser().getRelation(UserData.COLUMN_USER_RELATION);
-		ParseQuery<QuoteData> qtestQuot=testQuote.getQuery();
 		
-		qtestQuot.findInBackground(new FindCallback<QuoteData>() {
+		if (checkNetConection()) {
+			ParseRelation<QuoteData> testQuote=ParseUser.getCurrentUser().getRelation(UserData.COLUMN_USER_RELATION);
+			ParseQuery<QuoteData> qtestQuot=testQuote.getQuery();
 			
-			@Override
-			public void done(final List<QuoteData> objects, ParseException e) {
-				QuoteData.unpinAllInBackground(PIN_USER_LIKES, new DeleteCallback() {
-					
-					@Override
-					public void done(ParseException e) {
-						QuoteData.pinAllInBackground(PIN_USER_LIKES, objects,new SaveCallback() {
-							
-							@Override
-							public void done(ParseException e) {
-								for (QuoteData quoteData : objects) {
-									Log.d(GlobConst.LOG_TAG, "liked: "+quoteData.getQuote());
-								}
-								Log.d(GlobConst.LOG_TAG, "size: "+objects.size());
+			qtestQuot.findInBackground(new FindCallback<QuoteData>() {
+				
+				@Override
+				public void done(final List<QuoteData> objects, ParseException e) {
+					QuoteData.unpinAllInBackground(PIN_USER_LIKES, new DeleteCallback() {
+						
+						@Override
+						public void done(ParseException e) {
+							QuoteData.pinAllInBackground(PIN_USER_LIKES, objects,new SaveCallback() {
 								
-								
-								ParseQuery< QuoteData> query=ParseQuery.getQuery(QuoteData.class);
-								query.fromPin(PIN_USER_LIKES);
-								query.findInBackground(new FindCallback<QuoteData>() {
-									
-									@Override
-									public void done(List<QuoteData> objects, ParseException e) {
-										for (QuoteData quoteData : objects) {
-											Log.d(GlobConst.LOG_TAG, "from pin: "+quoteData.getQuote());
-										}
-										Log.d(GlobConst.LOG_TAG, "pin size: "+objects.size());
+								@Override
+								public void done(ParseException e) {
+									for (QuoteData quoteData : objects) {
+										Log.d(GlobConst.LOG_TAG, "liked: "+quoteData.getQuote());
 									}
-								});
-							}
-						});
-					}
-				});
-				
-				
-				
-				
-			}
-		});
-		
-		
+									Log.d(GlobConst.LOG_TAG, "size: "+objects.size());
+									
+									
+									ParseQuery< QuoteData> query=ParseQuery.getQuery(QuoteData.class);
+									query.fromPin(PIN_USER_LIKES);
+									query.findInBackground(new FindCallback<QuoteData>() {
+										
+										@Override
+										public void done(List<QuoteData> objects, ParseException e) {
+											for (QuoteData quoteData : objects) {
+												Log.d(GlobConst.LOG_TAG, "from pin: "+quoteData.getQuote());
+											}
+											Log.d(GlobConst.LOG_TAG, "pin size: "+objects.size());
+										}
+									});
+								}
+							});
+						}
+					});
+					
+					
+					
+					
+				}
+			});
+		}
 	}
 	
 	
@@ -1096,11 +1062,11 @@ public class ParseQuoteDataManager {
 			if(quoteWeak.get()!=null){
 			if(likedQuotes.size()>0){
 				
-				quoteWeak.get().setLiked(true);
+				//quoteWeak.get().setLiked(true);
 				return RESULT_OK_LIKED;
 				
 			}else{
-				quoteWeak.get().setLiked(false);
+				//quoteWeak.get().setLiked(false);
 				return RESULT_OK_UNLIKE;
 				
 			}

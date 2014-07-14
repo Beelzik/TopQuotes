@@ -7,6 +7,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.net.ConnectivityManager;
@@ -68,6 +69,8 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	 
 	 ConnectivityManager conMng;
 	 
+	 ProgressDialog downloadRecordsDialog;
+	 
 	 
 	
 	
@@ -100,6 +103,7 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		btnQuizPickThree.setOnClickListener(this);
 		btnQuizPickFour.setOnClickListener(this);
 		
+		downloadRecordsDialog=createDownloadRecordsDialog();
 		
 		return rootView;
 		}
@@ -125,6 +129,13 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		super.onAttach(activity);
 		((MainActivity) activity).onSectionAttached(getArguments().getInt(
 				GlobConst.ARG_SECTION_FRAGMENT_NUMBER),null);
+	}
+	
+	@Override
+	public void onDetach() {
+		quizeGame.setQuizeGameProgressListener(null);
+		
+		super.onDetach();
 	}
 
 	@Override
@@ -171,7 +182,7 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		btnQuizPickTwo.setText(fourRandomTitles.get(1));
 		btnQuizPickThree.setText(fourRandomTitles.get(2));
 		btnQuizPickFour.setText(fourRandomTitles.get(3));
-		
+			
 		userGameScore=score;
 	}
 
@@ -207,6 +218,9 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		
 		final boolean hasNetConnection=checkNetConection();
 		
+		disableButtons();
+		downloadRecordsDialog.show();
+		
 		if (user!=null) {
 			parseQuoteDataManager.addRecordInParse(userGameDateEnd, score, user,new SaveCallback() {
 				
@@ -221,8 +235,13 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 										ArrayList<QuizeRecordData> topTenRecordsList,
 										QuizeRecordData userTopRecord, int resultCode) {
 								if (resultCode==FindTopTenAndUserRecordsCallback.FIND_RESULT_OK) {
-									createDialogProgressWithNet(topTenRecordsList, userTopRecord);
-									Log.d(GlobConst.LOG_TAG, "FIND_RESULT_OK");
+									if (isAdded()) {
+										downloadRecordsDialog.cancel();
+										createDialogProgressWithNet(topTenRecordsList, userTopRecord);
+										enableButtons();
+										Log.d(GlobConst.LOG_TAG, "FIND_RESULT_OK");
+									}
+									
 								}	
 								}
 							});
@@ -234,25 +253,49 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		}
 		
 		if (!hasNetConnection) {
-			createDialogProgressWithoutNet();
+			if (isAdded()) {
+				createDialogProgressWithoutNet();
+				enableButtons();
+				downloadRecordsDialog.cancel();
+			}
 		}
 		
 		
 	
 	}
 	
+	public ProgressDialog createDownloadRecordsDialog(){
+		ProgressDialog downloadRecordsDialog=new ProgressDialog(getActivity());
+		String downloadMsg=getActivity().getString(R.string.dialog_quize_download_records_message);
+		downloadRecordsDialog.setMessage(downloadMsg);
+		return downloadRecordsDialog;
+	}
+	
+	public void enableButtons(){
+		btnQuizPickOne.setEnabled(true);
+		btnQuizPickTwo.setEnabled(true);	
+		btnQuizPickThree.setEnabled(true);	
+		btnQuizPickFour.setEnabled(true);	
+	}
+	
+	public void disableButtons(){
+		btnQuizPickOne.setEnabled(false);
+		btnQuizPickTwo.setEnabled(false);	
+		btnQuizPickThree.setEnabled(false);	
+		btnQuizPickFour.setEnabled(false);	
+	}
 	
 	public void createDialogProgressWithoutNet(){
 		
 		AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
 	    adb.setTitle(dialogProgressTitle);
 	  
-	    View  view = (LinearLayout) getActivity().getLayoutInflater()
+	    View  view =  getActivity().getLayoutInflater()
 	        .inflate(R.layout.dialog_quize_records_without_net, null);
 	
-	    TextView tvQuizeDialogCurrentDate=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentDate);
-	    TextView tvQuizeDialogCurrentUserName=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentUserName);
-	    TextView tvQuizeDialogCurrentScore=(TextView) view.findViewById(R.id.tvQuizeDialogCurrentScore);
+	    TextView tvQuizeDialogCurrentDate=(TextView) view.findViewById(R.id.tvQuizeDialogUrrecordDate);
+	    TextView tvQuizeDialogCurrentUserName=(TextView) view.findViewById(R.id.tvQuizeDialogUrrecordUserName);
+	    TextView tvQuizeDialogCurrentScore=(TextView) view.findViewById(R.id.tvQuizeDialogUrrecordScore);
 	    
 	    tvQuizeDialogCurrentDate.setText(userGameDateEnd);
 	    tvQuizeDialogCurrentUserName.setText(ParseUser.getCurrentUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));

@@ -14,6 +14,7 @@ import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.activity.QuoteAutorActivity;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 import com.beelzik.topquotes.util.AnimateFirstDisplayListener;
+import com.beelzik.topquotes.util.ShareQuoteUtil;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
@@ -130,7 +131,7 @@ public class SlideFragment extends Fragment{
 		
 		@Override
 		public void onClick(View v) {
-			// TODO Auto-generated method stub
+			ShareQuoteUtil.shareQuote(getActivity(), quote);
 			
 		}
 	});

@@ -26,6 +26,7 @@ import com.beelzik.topquotes.parse.OnQuoteLikedCallback;
 import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.activity.QuoteAutorActivity;
 import com.beelzik.topquotes.util.AnimateFirstDisplayListener;
+import com.beelzik.topquotes.util.ShareQuoteUtil;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
@@ -123,6 +124,7 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 			holder.ibtnListShare= (ImageButton) view.findViewById(R.id.ibtnListShare);
 			holder.ibtnListStreamLike= (ImageButton) view.findViewById(R.id.ibtnListStreamLike);
 			holder.ivListStreamUserAvatar= (ImageView) view.findViewById(R.id.ivListStreamUserAvatar);
+			parseQuoteDataManager.checkQuoteLikeStatus(holder.ibtnListStreamLike,quote, position);
 			
 			view.setTag(holder);
 			
@@ -140,7 +142,9 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 			
 			@Override
 			public void onClick(View v) {
+				ShareQuoteUtil.shareQuote(ctx, quote);
 				if(btnShareClickListener!=null){
+					
 					btnShareClickListener.
 					onBtnShareClickListener(view, position);
 				}

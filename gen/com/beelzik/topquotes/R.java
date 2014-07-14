@@ -1886,6 +1886,7 @@ containing a value of this type.
          */
         public static final int common_signin_button_text_long=0x7f05001e;
         public static final int dialog_quize_congratulations=0x7f050054;
+        public static final int dialog_quize_download_records_message=0x7f050057;
         public static final int dialog_quize_lb_top_ten_players=0x7f050051;
         public static final int dialog_quize_lb_ur_current_score=0x7f050053;
         public static final int dialog_quize_lb_ur_record=0x7f050052;
@@ -1899,6 +1900,10 @@ containing a value of this type.
         public static final int navigation_drawer_open=0x7f05002e;
         public static final int progress_dialog_msg=0x7f050033;
         public static final int progress_dialog_title=0x7f050032;
+        public static final int share_util_published_from_app=0x7f05005b;
+        public static final int share_util_season=0x7f050059;
+        public static final int share_util_series=0x7f05005a;
+        public static final int share_util_title=0x7f050058;
         /**  Text on a placeholder buy button when Google Play services is not
          available or up-to-date 
          */

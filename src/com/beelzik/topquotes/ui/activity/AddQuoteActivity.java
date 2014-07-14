@@ -254,12 +254,24 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				}
 			
 				String titleQuote=edAddQuoteText.getText().toString();
-				int season=Integer.parseInt(edAddQuoteNumSeason.getText().toString());
-				int episode=Integer.parseInt(edAddQuoteNumSeries.getText().toString());
+	
+				
 				int lang=spAddQuoteLanguage.getSelectedItemPosition();
 				
 				ParseUser user=ParseUser.getCurrentUser();
-				if(!titleName.equals("") && !titleQuote.equals("") && (user!=null)){
+				
+				boolean isTitleNameFilled=!titleName.equals("");
+				boolean isTitlQuoteFilled=!titleQuote.equals("");
+				boolean isSeasonFilled=(edAddQuoteNumSeason.getText().toString().equals(""));
+				boolean isEpisode=(edAddQuoteNumSeries.getText().toString().equals(""));
+				
+				boolean isUserNotNull=(user!=null);
+				
+				boolean canAdd=isTitleNameFilled && isTitlQuoteFilled && isSeasonFilled && isEpisode && isUserNotNull;
+				
+				if(canAdd){
+					int season=Integer.parseInt(edAddQuoteNumSeason.getText().toString());
+					int episode=Integer.parseInt(edAddQuoteNumSeries.getText().toString());
 					
 					String userDisplayName=sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME, null);
 					if (userDisplayName!=null) {

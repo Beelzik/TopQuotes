@@ -67,4 +67,9 @@
   		<string name="dialog_quize_congratulations">Congratulations u have a new record :)</string>
   		<string name="dialog_quize_posetive_btn_restart_game">Restart game</string>
   		<string name="dialog_quize_progress_title">Progress</string>
+  		<string name="dialog_quize_download_records_message">Download records...</string>
+  		<string name="share_util_title">Title: </string>
+  		<string name="share_util_season">Season: </string>
+  		<string name="share_util_series">Series: </string>
+  		<string name="share_util_published_from_app">Published from : </string>
 </resources>

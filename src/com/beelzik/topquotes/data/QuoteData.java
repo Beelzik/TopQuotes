@@ -21,17 +21,17 @@ public class QuoteData extends ParseObject{
 	public final static String COLUMN_QUOTE_CREATED_AT="createdAt";
 	public final static String COLUMN_QUOTE_UPDATED_AT="updatedAt";
 	
-	private boolean liked=false;
+	//private boolean liked=false;
 	
 	public final static int DEFAULT_QUOTE_TYPE=0;
 	
-	public boolean isLiked() {
+	/*public boolean isLiked() {
 		return liked;
 	}
 	
 	public void setLiked(boolean isLiked){
 		liked=isLiked;
-	}
+	}*/
 	
 	public String getQuoteId(){
 		return super.getObjectId();

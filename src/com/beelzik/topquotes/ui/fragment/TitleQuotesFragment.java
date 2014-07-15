@@ -14,16 +14,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.ListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.ListView;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.QuoteData;
-
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.callback.FindQuotesCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.activity.MainActivity;
 import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
@@ -35,7 +34,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 	ListView  lvTitleQuotes;
 	SwipeRefreshLayout swTitleCont;
 	QuotesStreamListAdapter quotesAdapter;
-	ParseQuoteDataManager parseQuoteDataManager;
+	TitleListStorage titleListHolder;
 	private int wutFragment;
 	SharedPreferences sp;
 	int langFlag;
@@ -83,10 +82,10 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		parseQuoteDataManager=((TopQuotesApplication) getActivity().
-				getApplication()).getParseQuoteDataManager();
+		titleListHolder=((TopQuotesApplication) this.
+				getActivity().getApplication()).getTitleListHolder();
 		
-		quotesAdapter=new QuotesStreamListAdapter(getActivity(), parseQuoteDataManager);
+		quotesAdapter=new QuotesStreamListAdapter(getActivity());
 		quotesAdapter.setBtnShareClickListener(this);
 		lvTitleQuotes.setAdapter(quotesAdapter);
 		
@@ -120,10 +119,10 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 		
 		swTitleCont.setRefreshing(true);
 
-		titleName=parseQuoteDataManager.getTitleList(langFlag).get(wutFragment);
+		titleName=titleListHolder.getTitleList(langFlag).get(wutFragment);
 		
 		Log.d(GlobConst.LOG_TAG,"cur title name: "+titleName);
-		parseQuoteDataManager.findTitleQuotes(20,0,titleName,langFlag,new FindQuotesCallback() {
+		QuoteData.findTitleQuotes(getActivity(),20,0,titleName,langFlag,new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -153,9 +152,6 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 			this.count=count;
 		}
 		
-		public void setStep(int step) {
-			this.step = step;
-		}
 		@Override
 		public void onScrollStateChanged(AbsListView view, int scrollState) {
 		}
@@ -167,7 +163,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 				pastTotalCount=totalItemCount;
 				langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 				
-				parseQuoteDataManager.findAllTitlesQuotes(step, count, langFlag, new FindQuotesCallback() {
+				QuoteData.findAllTitlesQuotes(getActivity(),step, count, langFlag, new FindQuotesCallback() {
 					
 					@Override
 					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -175,7 +171,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 					}
 				});
 				
-				parseQuoteDataManager.findTitleQuotes(step, count, titleName, totalItemCount, new FindQuotesCallback() {
+				QuoteData.findTitleQuotes(getActivity(),step, count, titleName, totalItemCount, new FindQuotesCallback() {
 					
 					@Override
 					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {

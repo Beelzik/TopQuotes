@@ -1,7 +1,6 @@
 package com.beelzik.topquotes.ui.fragment;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
@@ -32,20 +31,13 @@ import android.widget.Toast;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.UserData;
-import com.beelzik.topquotes.parse.FindTitlesNameCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
-import com.beelzik.topquotes.parse.ParseRelationTester;
+import com.beelzik.topquotes.parse.callback.FindTitlesNameCallback;
+import com.beelzik.topquotes.parse.data.TitleData;
+import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
 import com.beelzik.topquotes.ui.activity.AddQuoteActivity;
 import com.beelzik.topquotes.ui.activity.ProfileActivity;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
-import com.parse.LogInCallback;
-import com.parse.ParseException;
-import com.parse.SaveCallback;
-import com.parse.ParseFacebookUtils.Permissions.User;
-import com.parse.ParseUser;
-import com.parse.SignUpCallback;
 
 
 public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNavigationListener{
@@ -74,7 +66,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
     private String[] navConstItems;
     
     private ArrayList<String> navConstItemsList;
-    private ParseQuoteDataManager parseQuoteDataManager;
+    private TitleListStorage titleListHolder;
     
 	private String checkedLaguages[];
 	
@@ -82,9 +74,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
 	
 	SharedPreferences sp;
 	int langFlag;
-	
-	
-	ParseRelationTester parseRelationTester;
+
     
     ArrayAdapter<String> navigationAdapter;
     public NavigationDrawerFragment() {
@@ -108,10 +98,10 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
 			navConstItemsList.add(item);
 		}
         
-        parseQuoteDataManager=((TopQuotesApplication) getActivity().
-				getApplication()).getParseQuoteDataManager();
+        titleListHolder=((TopQuotesApplication) this.
+				getActivity().getApplication()).getTitleListHolder();
         
-        parseQuoteDataManager.setTitleList(langFlag,navConstItemsList);
+       TitleListStorage.setTitleList(langFlag,navConstItemsList);
         
         
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
@@ -122,10 +112,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         }
 
         selectItem(mCurrentSelectedPosition);
-        
-        ////////
-        
-        parseRelationTester= new ParseRelationTester();
+       
     }
 
     @Override
@@ -381,7 +368,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
     public void refreshNavigationTitleList(final int langFlag){
     	Log.d(GlobConst.LOG_TAG, "refreshNavigationTitleList");
     	  
-          parseQuoteDataManager.findAllTitleName(langFlag,new FindTitlesNameCallback() {
+          TitleData.findAllTitleName(getActivity(),langFlag,new FindTitlesNameCallback() {
   			
   			@Override
   			public void findTitleNameCallback(List<String> titleNameList, int resultCode) {
@@ -426,7 +413,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
   						
   						navigationAdapter.add(string);
   					}*/
-  					parseQuoteDataManager.setTitleList(langFlag,titleConteiner);
+  					titleListHolder.setTitleList(langFlag,titleConteiner);
   					navigationAdapter.notifyDataSetChanged();
   				}
   				

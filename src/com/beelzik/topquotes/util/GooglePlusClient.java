@@ -3,7 +3,6 @@ package com.beelzik.topquotes.util;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -12,10 +11,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.beelzik.topquotes.GlobConst;
-import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
-import com.beelzik.topquotes.ui.activity.MainActivity;
-import com.beelzik.topquotes.ui.activity.OnUserAuthListener;
+import com.beelzik.topquotes.parse.data.UserData;
+import com.beelzik.topquotes.ui.activity.listener.OnUserAuthListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -30,7 +27,6 @@ OnConnectionFailedListener {
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
 	Context context;
 	Activity activity;
-	ParseQuoteDataManager parseQuoteDataManager;
 	GooglePlusClientListener googlePlusClientListener;
 	OnUserAuthListener authListener;
 	
@@ -47,8 +43,6 @@ OnConnectionFailedListener {
 
 	public void setActivity(Activity activity) {
 		this.activity = activity;
-		parseQuoteDataManager=((TopQuotesApplication) activity.getApplication())
-				.getParseQuoteDataManager();
 		
 		mConnectionProgressDialog = new ProgressDialog(activity);
 		mConnectionProgressDialog.setMessage("Signing in...");
@@ -108,11 +102,6 @@ OnConnectionFailedListener {
 
 		Editor editor=sp.edit();
 		editor.putBoolean(GlobConst.SP_FLAG_USER_IS_LOGIN, true);
-		editor.putString(GlobConst.SP_FLAG_ACOUNT_NAME, accountName);
-		editor.putString(GlobConst.SP_FLAG_USER_NAME, userName);
-		editor.putString(GlobConst.SP_FLAG_USER_FAMILY,userFamily);
-		editor.putString(GlobConst.SP_FLAG_USER_AVATAR_URL,userAvatarUrl);
-		editor.putString(GlobConst.SP_FLAG_USER_DISPLAY_NAME,userDisplayName);
 		editor.commit();
 		
 		if (GlobConst.DEBUG) {
@@ -121,9 +110,9 @@ OnConnectionFailedListener {
 					"\n userFamily: "+userFamily+
 					"\n userAvatarUrl: "+userAvatarUrl);
 		}
-		if (parseQuoteDataManager!=null) {
-			parseQuoteDataManager.addUser(authListener);
-		}
+		
+		UserData.addUser(userDisplayName, accountName, userAvatarUrl, accountName, authListener);
+		
 		mConnectionProgressDialog.cancel();
 		
 		if (googlePlusClientListener!=null) {

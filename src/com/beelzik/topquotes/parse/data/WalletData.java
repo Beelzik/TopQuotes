@@ -1,9 +1,9 @@
-package com.beelzik.topquotes.data;
+package com.beelzik.topquotes.parse.data;
 
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 
-@ParseClassName("WalletData")
+@ParseClassName("Wallet")
 public class WalletData extends ParseObject{
 
 }

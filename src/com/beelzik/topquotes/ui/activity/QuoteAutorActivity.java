@@ -6,11 +6,12 @@ import java.util.List;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.data.UserData;
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.callback.FindQuotesCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.UserData;
+import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
+import com.beelzik.topquotes.ui.activity.listener.OnUserQuoteScrollListener;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
 
@@ -31,7 +32,7 @@ public class QuoteAutorActivity extends ActionBarActivity implements OnNavigatio
 
 	ListView lvAutor;
 	QuotesStreamListAdapter quotesStreamListAdapter;
-	ParseQuoteDataManager parseQuoteDataManager;
+
 	int langFlag;
 	ActionBar actionBar;
 	private ArrayList<SpinnerNavItem> navSpinner;
@@ -49,8 +50,9 @@ public class QuoteAutorActivity extends ActionBarActivity implements OnNavigatio
 		
 		checkedLaguages=getResources().getStringArray(R.array.check_languages);
 		
-		parseQuoteDataManager=((TopQuotesApplication) getApplication()).getParseQuoteDataManager();
-		quotesStreamListAdapter= new QuotesStreamListAdapter(this, parseQuoteDataManager);
+
+		
+		quotesStreamListAdapter= new QuotesStreamListAdapter(this);
 		
 		userNameDisplay=getIntent().getStringExtra(UserData.COLUMN_USER_NAME_DISPLAY);
 		userId=getIntent().getStringExtra(UserData.COLUMN_USER_ID);
@@ -117,7 +119,7 @@ public class QuoteAutorActivity extends ActionBarActivity implements OnNavigatio
 	}
 	
 	public void findQuotes(){
-		 parseQuoteDataManager.findUserQuotes(20,0,userId, langFlag, new FindQuotesCallback() {
+		QuoteData.findUserQuotes(this,20,0,userId, langFlag, new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -131,7 +133,7 @@ public class QuoteAutorActivity extends ActionBarActivity implements OnNavigatio
 						quotesStreamListAdapter.notifyDataSetChanged();
 						
 						OnUserQuoteScrollListener scrollListener=
-								new OnUserQuoteScrollListener(20, userId, sp, parseQuoteDataManager, quotesStreamListAdapter);
+								new OnUserQuoteScrollListener(QuoteAutorActivity.this,20, userId, sp, quotesStreamListAdapter);
 						lvAutor.setOnScrollListener(scrollListener);
 					
 					}

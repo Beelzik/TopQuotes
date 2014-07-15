@@ -1,40 +1,28 @@
 package com.beelzik.topquotes.ui.fragment;
 
 
-import java.util.List;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebStorage.QuotaUpdater;
-import android.widget.SimpleAdapter;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.FindTitlesNameCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
 import com.beelzik.topquotes.ui.activity.MainActivity;
-import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 import com.beelzik.topquotes.ui.adapter.SlideQuoteAdapter;
 
 public class PagerFragment extends Fragment  implements RefreshQuoteListener{
 
 	ViewPager pgSlide;
-	ParseQuoteDataManager parseQuoteDataManager;
+
 	SharedPreferences sp;
 	int langFlag;
 	SlideQuoteAdapter slideAdapter;
@@ -52,13 +40,10 @@ public class PagerFragment extends Fragment  implements RefreshQuoteListener{
 			Bundle savedInstanceState) {
 		View rootView=inflater.inflate(R.layout.fragment_pager, container,false);
 
-		parseQuoteDataManager=((TopQuotesApplication) getActivity().
-				getApplication()).getParseQuoteDataManager();
 		
 		sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
 		langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
-		slideAdapter= new SlideQuoteAdapter(getActivity().getSupportFragmentManager(),
-				parseQuoteDataManager);
+		slideAdapter= new SlideQuoteAdapter(getActivity().getSupportFragmentManager());
 		
 		
 		

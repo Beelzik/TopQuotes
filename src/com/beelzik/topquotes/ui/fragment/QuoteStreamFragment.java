@@ -19,10 +19,8 @@ import android.widget.ListView;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.callback.FindQuotesCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
 import com.beelzik.topquotes.ui.activity.MainActivity;
 import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnLikeClickListener;
 import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
@@ -36,7 +34,6 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	ListView  lvStreamQuotes;
 	SwipeRefreshLayout swStreamCont;
 	QuotesStreamListAdapter quotesAdapter;
-	ParseQuoteDataManager parseQuoteDataManager;
 	SharedPreferences sp;
 	int langFlag;
 
@@ -80,12 +77,10 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
-		parseQuoteDataManager=((TopQuotesApplication) getActivity().
-				getApplication()).getParseQuoteDataManager();
+
 		sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
 		
-		quotesAdapter=new QuotesStreamListAdapter(getActivity(),parseQuoteDataManager);
+		quotesAdapter=new QuotesStreamListAdapter(getActivity());
 		quotesAdapter.setBtnShareClickListener(this);
 		quotesAdapter.setBtnLikeClickListener(this);
 		//quotesAdapter.setIvAvatarClickListener(this);
@@ -120,7 +115,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 		//scrollListener=new StreamScrollListener();
 		
 		
-		parseQuoteDataManager.findAllTitlesQuotes(20,0,langFlag,new FindQuotesCallback() {
+		QuoteData.findAllTitlesQuotes(getActivity(),20,0,langFlag,new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -164,9 +159,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 			this.count=count;
 		}
 		
-		public void setStep(int step) {
-			this.step = step;
-		}
+
 		@Override
 		public void onScrollStateChanged(AbsListView view, int scrollState) {
 		}
@@ -178,7 +171,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 				pastTotalCount=totalItemCount;
 				langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 				
-				parseQuoteDataManager.findAllTitlesQuotes(step, count, langFlag, new FindQuotesCallback() {
+				QuoteData.findAllTitlesQuotes(getActivity(),step, count, langFlag, new FindQuotesCallback() {
 					
 					@Override
 					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {

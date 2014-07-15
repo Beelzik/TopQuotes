@@ -28,12 +28,12 @@ import android.widget.Toast;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.QuizeRecordData;
-import com.beelzik.topquotes.data.UserData;
 import com.beelzik.topquotes.logic.game.quize.QuizeGame;
 import com.beelzik.topquotes.logic.game.quize.QuizeGameProgressListener;
-import com.beelzik.topquotes.parse.FindTopTenAndUserRecordsCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.callback.FindTopTenAndUserRecordsCallback;
+import com.beelzik.topquotes.parse.data.QuizeRecordData;
+import com.beelzik.topquotes.parse.data.UserData;
+
 import com.beelzik.topquotes.ui.activity.MainActivity;
 import com.beelzik.topquotes.ui.adapter.QuizeRecordAdapter;
 import com.parse.FindCallback;
@@ -55,7 +55,7 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	Button btnQuizPickFour;
 	
 	QuizeGame quizeGame;
-	ParseQuoteDataManager parseQuoteDataManager;
+
 	
 	 ArrayList<String> fourRandomTitles;
 	 
@@ -111,8 +111,6 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	@Override
 	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		parseQuoteDataManager=((TopQuotesApplication) getActivity().
-				getApplication()).getParseQuoteDataManager();
 		
 		conMng= (ConnectivityManager) getActivity().getSystemService(Service.CONNECTIVITY_SERVICE);
 		
@@ -222,13 +220,13 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 		downloadRecordsDialog.show();
 		
 		if (user!=null) {
-			parseQuoteDataManager.addRecordInParse(userGameDateEnd, score, user,new SaveCallback() {
+			QuizeRecordData.addRecordInParse(userGameDateEnd, score, user,new SaveCallback() {
 				
 				@Override
 				public void done(ParseException e) {
 					if(e==null){
 						if (hasNetConnection) {
-							parseQuoteDataManager.findTopTenRecordsAndUser(new FindTopTenAndUserRecordsCallback() {
+							QuizeRecordData.findTopTenRecordsAndUser(new FindTopTenAndUserRecordsCallback() {
 								
 								@Override
 								public void findTopTenAndUserRecordsCallback(
@@ -381,7 +379,7 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 	
 	public void refreshQuizeGame(){
 		
-		quizeGame=new QuizeGame(getActivity(), quizeGameDefaultLives, parseQuoteDataManager);
+		quizeGame=new QuizeGame(getActivity(), quizeGameDefaultLives);
 		quizeGame.setQuizeGameProgressListener(this);
 		quizeGame.startGame();
 

@@ -1,14 +1,10 @@
 package com.beelzik.topquotes.ui.adapter;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,25 +14,19 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.data.UserData;
-import com.beelzik.topquotes.parse.OnQuoteLikedCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.callback.OnQuoteLikedCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.UserData;
+import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.activity.QuoteAutorActivity;
 import com.beelzik.topquotes.util.AnimateFirstDisplayListener;
+import com.beelzik.topquotes.util.NetConnectionRespondent;
 import com.beelzik.topquotes.util.ShareQuoteUtil;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.parse.FindCallback;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseUser;
 
 public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLikedCallback {
 
@@ -45,13 +35,13 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 	OnQuotesListBtnShareClickListener btnShareClickListener;
 	OnQuotesListBtnLikeClickListener btnLikeClickListener;
 	OnQuotesListIvAvatarClickListener ivAvatarClickListener;
-	ParseQuoteDataManager parseQuoteDataManager;
+	TitleListStorage titleListHolder;
 	protected ImageLoader imageLoader;
 	Context ctx;
 	DisplayImageOptions options;
 	private ImageLoadingListener animateFirstListener;
 	
-	public QuotesStreamListAdapter(Context ctx,ParseQuoteDataManager parseQuoteDataManager) {
+	public QuotesStreamListAdapter(Context ctx) {
 		imageLoader = ImageLoader.getInstance();
 		
 		options = new DisplayImageOptions.Builder()
@@ -68,7 +58,6 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 		
 		data=new ArrayList<QuoteData>();
 		inflater=LayoutInflater.from(ctx);
-		this.parseQuoteDataManager=parseQuoteDataManager;
 		this.ctx=ctx;
 	}
 	
@@ -124,7 +113,7 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 			holder.ibtnListShare= (ImageButton) view.findViewById(R.id.ibtnListShare);
 			holder.ibtnListStreamLike= (ImageButton) view.findViewById(R.id.ibtnListStreamLike);
 			holder.ivListStreamUserAvatar= (ImageView) view.findViewById(R.id.ivListStreamUserAvatar);
-			parseQuoteDataManager.checkQuoteLikeStatus(holder.ibtnListStreamLike,quote, position);
+			QuoteData.checkQuoteLikeStatus(ctx,holder.ibtnListStreamLike,quote, position);
 			
 			view.setTag(holder);
 			
@@ -155,8 +144,9 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 					
 					@Override
 					public void onClick(View v) {
-
-						parseQuoteDataManager.likeQuoteInParse(v, getItem(position),  QuotesStreamListAdapter.this);
+						if(NetConnectionRespondent.checkNetConection(ctx)){
+							QuoteData.likeQuoteInParse(v, getItem(position),  QuotesStreamListAdapter.this);
+						}
 						if(btnLikeClickListener!=null){
 							btnLikeClickListener.
 							onBtnLikeClickListener(v, position);
@@ -182,7 +172,7 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 			}
 		});
 	
-		parseQuoteDataManager.checkQuoteLikeStatus(holder.ibtnListStreamLike,quote, position);
+		QuoteData.checkQuoteLikeStatus(ctx,holder.ibtnListStreamLike,quote, position);
 	
 		imageLoader.displayImage(quote.getUser().getString(UserData.COLUMN_USER_AVATA_URL),
 				holder.ivListStreamUserAvatar, options, animateFirstListener);
@@ -223,21 +213,7 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 	}
 	
 	
-	
-	private class QuoteFindCallBack extends GetCallback<ParseUser>{
-		
-		ViewHolder holder;
-		
-		public QuoteFindCallBack(ViewHolder holder) {
-			this.holder=holder;
-		}
 
-		@Override
-		public void done(ParseUser user, ParseException e) {
-			
-		}
-
-	}
 	
 	private class ViewHolder{
 		

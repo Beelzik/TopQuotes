@@ -25,11 +25,12 @@ import android.widget.TextView;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.data.UserData;
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.callback.FindQuotesCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.UserData;
+import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
+import com.beelzik.topquotes.ui.activity.listener.OnUserQuoteScrollListener;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
 import com.beelzik.topquotes.util.AnimateFirstDisplayListener;
@@ -55,7 +56,7 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 	GooglePlusClient googlePlusClient;
 	
 	QuotesStreamListAdapter quotesStreamListAdapter;
-	ParseQuoteDataManager parseQuoteDataManager;
+
 	
 	SharedPreferences sp;
 	ActionBar actionBar;
@@ -106,9 +107,8 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 		googlePlusClient=((TopQuotesApplication) getApplication())
 				.getGooglePlusClient();
 		googlePlusClient.setActivity(this);
-		
-		parseQuoteDataManager=((TopQuotesApplication) getApplication()).getParseQuoteDataManager();
-		quotesStreamListAdapter= new QuotesStreamListAdapter(this, parseQuoteDataManager);
+
+		quotesStreamListAdapter= new QuotesStreamListAdapter(this);
 		
 		checkedLaguages=getResources().getStringArray(R.array.check_languages);
 		
@@ -207,14 +207,14 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 	
 	public void findQuotes(){
 		
-		parseQuoteDataManager.getQuotesCount(langFlag,new CountCallback() {
+		QuoteData.getQuotesCount(this,langFlag,new CountCallback() {
 			
 			@Override
 			public void done(int count, ParseException e) {
 				tvProfilePublishedQuotes.setText(count+"");
 			}
 		});
-		 parseQuoteDataManager.findUserQuotes(20,0,userId, langFlag, new FindQuotesCallback() {
+		QuoteData.findUserQuotes(this,20,0,userId, langFlag, new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -228,8 +228,8 @@ public class ProfileActivity extends ActionBarActivity implements OnClickListene
 						quotesStreamListAdapter.notifyDataSetChanged();
 						Log.d(GlobConst.LOG_TAG, "autor quote.size(): "+quotesList.size());
 						
-						OnUserQuoteScrollListener listener= new OnUserQuoteScrollListener(20, 
-								userId,sp,parseQuoteDataManager, quotesStreamListAdapter);
+						OnUserQuoteScrollListener listener= new OnUserQuoteScrollListener(ProfileActivity.this,20, 
+								userId,sp, quotesStreamListAdapter);
 						lvProfileQuotes.setOnScrollListener(listener);
 						
 						

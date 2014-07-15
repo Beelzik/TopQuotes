@@ -1,4 +1,4 @@
-package com.beelzik.topquotes.parse;
+package com.beelzik.topquotes.parse.callback;
 
 import java.util.List;
 

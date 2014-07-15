@@ -1,8 +1,8 @@
-package com.beelzik.topquotes.parse;
+package com.beelzik.topquotes.parse.callback;
 
 import java.util.ArrayList;
 
-import com.beelzik.topquotes.data.QuizeRecordData;
+import com.beelzik.topquotes.parse.data.QuizeRecordData;
 
 public interface FindTopTenAndUserRecordsCallback {
 

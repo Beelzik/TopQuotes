@@ -11,9 +11,8 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.data.QuizeRecordData;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.data.UserData;
+import com.beelzik.topquotes.parse.data.QuizeRecordData;
+import com.beelzik.topquotes.parse.data.UserData;
 import com.parse.ParseUser;
 
 public class QuizeRecordAdapter extends BaseAdapter {

@@ -2,18 +2,6 @@ package com.beelzik.topquotes.ui.fragment;
 
 import java.util.List;
 
-import com.beelzik.topquotes.GlobConst;
-import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
-import com.beelzik.topquotes.ui.activity.MainActivity;
-import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnLikeClickListener;
-import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
-import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
-import com.parse.ParseObject;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -27,6 +15,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.beelzik.topquotes.GlobConst;
+import com.beelzik.topquotes.R;
+import com.beelzik.topquotes.parse.callback.FindQuotesCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.ui.activity.MainActivity;
+import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnLikeClickListener;
+import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
+import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
+
 public class TopFavoritesFragment extends Fragment implements OnQuotesListBtnShareClickListener, 
 RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	
@@ -34,7 +31,6 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	ListView  lvStreamQuotes;
 	SwipeRefreshLayout swStreamCont;
 	QuotesStreamListAdapter quotesAdapter;
-	ParseQuoteDataManager parseQuoteDataManager;
 	SharedPreferences sp;
 	int langFlag;
 	
@@ -77,11 +73,8 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
-		parseQuoteDataManager=((TopQuotesApplication) getActivity().
-				getApplication()).getParseQuoteDataManager();
-		
-		quotesAdapter=new QuotesStreamListAdapter(getActivity(),parseQuoteDataManager);
+
+		quotesAdapter=new QuotesStreamListAdapter(getActivity());
 		quotesAdapter.setBtnShareClickListener(this);
 		quotesAdapter.setBtnLikeClickListener(this);
 		//quotesAdapter.setIvAvatarClickListener(this);
@@ -113,7 +106,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 		
 		swStreamCont.setRefreshing(true);
 		
-		parseQuoteDataManager.findAllLikedQuotes(20, 0, langFlag, new FindQuotesCallback() {
+		QuoteData.findAllLikedQuotes(getActivity(),20, 0, langFlag, new FindQuotesCallback() {
 
 			@Override
 			public void findQuotesCallback(List<QuoteData> quotesList,

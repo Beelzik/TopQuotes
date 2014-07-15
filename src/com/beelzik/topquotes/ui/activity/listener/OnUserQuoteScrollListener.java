@@ -1,19 +1,19 @@
-package com.beelzik.topquotes.ui.activity;
+package com.beelzik.topquotes.ui.activity.listener;
 
 import java.util.List;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 
 import com.beelzik.topquotes.GlobConst;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.callback.FindQuotesCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 
-class OnUserQuoteScrollListener implements OnScrollListener{
+public class OnUserQuoteScrollListener implements OnScrollListener{
 	
 	int count;
 	int step=10;
@@ -22,17 +22,17 @@ class OnUserQuoteScrollListener implements OnScrollListener{
 	
 	String userId;
 	SharedPreferences sp;
-	ParseQuoteDataManager parseQuoteDataManager;
 	QuotesStreamListAdapter adapter;
+	Context ctx;
 	int langFlag;
 	
-	public OnUserQuoteScrollListener(int count, String userId,SharedPreferences sp,
-			ParseQuoteDataManager parseQuoteDataManager, QuotesStreamListAdapter adapter) {
+	public OnUserQuoteScrollListener(Context ctx,int count, String userId,SharedPreferences sp,
+			 QuotesStreamListAdapter adapter) {
 		this.adapter=adapter;
 		this.count = count;
 		this.userId = userId;
 		this.sp = sp;
-		this.parseQuoteDataManager = parseQuoteDataManager;
+		this.ctx=ctx;
 	}
 
 
@@ -53,7 +53,7 @@ class OnUserQuoteScrollListener implements OnScrollListener{
 		    langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
 			
-			parseQuoteDataManager.findUserQuotes(step,count,userId, langFlag, new FindQuotesCallback() {
+			QuoteData.findUserQuotes(ctx,step,count,userId, langFlag, new FindQuotesCallback() {
 			
 			@Override
 			public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {

@@ -1,4 +1,4 @@
-package com.beelzik.topquotes.ui.activity;
+package com.beelzik.topquotes.ui.activity.listener;
 
 public interface OnUserAuthListener {
 	

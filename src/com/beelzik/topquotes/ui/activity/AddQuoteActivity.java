@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,10 +24,10 @@ import android.widget.Toast;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.parse.FindTitlesNameCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
-import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
+import com.beelzik.topquotes.parse.callback.FindTitlesNameCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.TitleData;
+import com.beelzik.topquotes.parse.data.UserData;
 import com.parse.ParseUser;
 
 public class AddQuoteActivity extends ActionBarActivity implements OnClickListener{
@@ -51,8 +49,6 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 	
 	String[] checkedLaguages;
 	
-	
-	ParseQuoteDataManager parseQuoteDataManager;
 	SharedPreferences sp;
 	
 	String spDefaultValue;
@@ -64,9 +60,6 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_quote);
-		
-		parseQuoteDataManager=((TopQuotesApplication) getApplication())
-				.getParseQuoteDataManager();
 		
 		curTitleList=new ArrayList<String>();
 		
@@ -128,7 +121,7 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				Log.d(GlobConst.LOG_TAG,"setOnItemSelectedListener position: "
 					+position);
 				
-			parseQuoteDataManager.findAllTitleName(position, new FindTitlesNameCallback() {
+			TitleData.findAllTitleName(AddQuoteActivity.this,position, new FindTitlesNameCallback() {
 					
 					@Override
 					public void findTitleNameCallback(List<String> titleNameList, int resultCode) {
@@ -262,21 +255,22 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				
 				boolean isTitleNameFilled=!titleName.equals("");
 				boolean isTitlQuoteFilled=!titleQuote.equals("");
-				boolean isSeasonFilled=(edAddQuoteNumSeason.getText().toString().equals(""));
-				boolean isEpisode=(edAddQuoteNumSeries.getText().toString().equals(""));
+				boolean isSeasonFilled=(!edAddQuoteNumSeason.getText().toString().equals(""));
+				boolean isEpisode=(!edAddQuoteNumSeries.getText().toString().equals(""));
 				
 				boolean isUserNotNull=(user!=null);
 				
 				boolean canAdd=isTitleNameFilled && isTitlQuoteFilled && isSeasonFilled && isEpisode && isUserNotNull;
 				
+				Log.d(GlobConst.LOG_TAG,"canAdd: "+canAdd);
 				if(canAdd){
 					int season=Integer.parseInt(edAddQuoteNumSeason.getText().toString());
 					int episode=Integer.parseInt(edAddQuoteNumSeries.getText().toString());
 					
-					String userDisplayName=sp.getString(GlobConst.SP_FLAG_USER_DISPLAY_NAME, null);
+					String userDisplayName=user.getString(UserData.COLUMN_USER_NAME_DISPLAY);
 					if (userDisplayName!=null) {
 						
-						parseQuoteDataManager.addQuoteInParse(titleQuote, titleName, season, episode, user, lang);
+						QuoteData.addQuoteInParse(titleQuote, titleName, season, episode, user, lang);
 						showThanksDialog();
 					}
 					

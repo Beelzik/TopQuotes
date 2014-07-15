@@ -1,11 +1,10 @@
 package com.beelzik.topquotes.util;
 
-import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.data.TitleData;
-
 import android.content.Context;
 import android.content.Intent;
+
+import com.beelzik.topquotes.R;
+import com.beelzik.topquotes.parse.data.QuoteData;
 
 public class ShareQuoteUtil {
 	

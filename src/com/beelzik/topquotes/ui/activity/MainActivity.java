@@ -19,7 +19,8 @@ import android.view.MenuItem;
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.TopQuotesApplication;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
 import com.beelzik.topquotes.ui.fragment.PagerFragment;
@@ -38,7 +39,7 @@ public class MainActivity extends ActionBarActivity implements
     private ArrayList<SpinnerNavItem> navSpinner;
     private TitleNavigationAdapter adapter;
     
-    private ParseQuoteDataManager parseQuoteDataManager;
+    private TitleListStorage titleListHolder;
 	private NavigationDrawerFragment mNavigationDrawerFragment;
 	private String checkedLaguages[];
 	
@@ -53,9 +54,9 @@ public class MainActivity extends ActionBarActivity implements
 		setContentView(R.layout.activity_main);
 		
 		
-		parseQuoteDataManager=((TopQuotesApplication) this.
-				getApplication()).getParseQuoteDataManager();
-		parseQuoteDataManager.syncAllLikesFromParse();
+		titleListHolder=((TopQuotesApplication) this.
+				getApplication()).getTitleListHolder();
+		QuoteData.syncAllLikesFromParse(this);
 		
 		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.navigation_drawer);
@@ -114,7 +115,7 @@ public class MainActivity extends ActionBarActivity implements
 	}
 	
 	public void onSectionAttached(int number, RefreshQuoteListener listener) {
-		ArrayList<String> titleList=parseQuoteDataManager.getTitleList(langFlag);
+		ArrayList<String> titleList=TitleListStorage.getTitleList(langFlag);
 		mTitle=titleList.get(number);
 		mNavigationDrawerFragment.setRefreshQuoteListener(listener);
 		setRefreshQuoteListener(listener);

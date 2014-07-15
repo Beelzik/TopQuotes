@@ -3,7 +3,6 @@ package com.beelzik.topquotes.logic.game.quize;
 import java.util.ArrayList;
 import java.util.Random;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -11,11 +10,9 @@ import android.util.Log;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.parse.FindRandomQuoteCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
-import com.parse.CountCallback;
-import com.parse.ParseException;
+import com.beelzik.topquotes.parse.callback.FindRandomQuoteCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 
 public class QuizeGame {
 
@@ -25,7 +22,7 @@ public class QuizeGame {
 	private QuoteData quote;
 	private ArrayList<String> fourRandomTitle;
 	private String correctTitle;
-	ParseQuoteDataManager parseQuoteDataManager;
+
 	int langFlag;
 	Context ctx; 
 	
@@ -36,15 +33,15 @@ public class QuizeGame {
 	final static int MIN_TITLE_FOR_GAME=4;
 	final static int RANDOM_TITLE_COUNT=4;
 	
-	private final static int SCORE_STEP=10000;
+	private final static int SCORE_STEP=100;
 	ArrayList<String> titles;
 	SharedPreferences sp;
 
-	public QuizeGame(Context ctx,int lives, ParseQuoteDataManager parseQuoteDataManager) {
+	public QuizeGame(Context ctx,int lives) {
 		this.lives = lives;
-		this.parseQuoteDataManager=parseQuoteDataManager;
 		noTitlesInTitleList=ctx.getResources().getStringArray(R.array.navigation_drawer_const_item).length;
 		sp=PreferenceManager.getDefaultSharedPreferences(ctx);
+		this.ctx=ctx;
 	}
 	
 	public void setQuizeGameProgressListener(
@@ -62,12 +59,12 @@ public class QuizeGame {
 	}
 	
 	private void findQuote(final int langFlag){
-		parseQuoteDataManager.findRandomQuote(langFlag, new FindRandomQuoteCallback() {
+		QuoteData.findRandomQuote(ctx,langFlag, new FindRandomQuoteCallback() {
 			
 			@Override
 			public void findRandomQuoteCallback(QuoteData quote, int resultCode) {
 				if (FindRandomQuoteCallback.FIND_RESULT_OK==resultCode) {
-					titles=parseQuoteDataManager.getTitleList(langFlag);
+					titles=TitleListStorage.getTitleList(langFlag);
 					if (titles.size()>=(noTitlesInTitleList+MIN_TITLE_FOR_GAME)) {
 						ArrayList<String> fourRandomTitles=getFourRandomTitles(quote.getTitle().getTitleName(),titles);
 						Log.d(GlobConst.LOG_TAG, "random quote: "+quote.getQuote());
@@ -128,13 +125,8 @@ public class QuizeGame {
 	
 		for (int i = noTitlesInTitleList; i < allTitles.size(); i++) {
 			allTitleCont.add(allTitles.get(i));
-			Log.d(GlobConst.LOG_TAG, "============== allTitleCont: "+allTitleCont.get(i-noTitlesInTitleList));
 		}
 		
-		
-		for (String string : allTitleCont) {
-			Log.d(GlobConst.LOG_TAG, "_______ allTitleCont: "+string);
-		}
 		ArrayList<String> fourTitles= new ArrayList<String>();
 		
 		Random random=new Random();
@@ -146,10 +138,8 @@ public class QuizeGame {
 		String nextTitle=null;
 		int nextTitlePosition;
 		
-			Log.d(GlobConst.LOG_TAG, "fourTitles.size() : "+fourTitles.size());
-		
 				
-					for (int allTitlePosition = 0; fourTitles.size()<4; allTitlePosition++) {
+					for ( ; fourTitles.size()<4; ) {
 						if (allTitleCont.size()>1) {
 							nextTitlePosition=random.nextInt(allTitleCont.size());
 							nextTitle=allTitleCont.get(nextTitlePosition);
@@ -161,7 +151,6 @@ public class QuizeGame {
 									}
 								}
 							if(!isFound){
-									Log.d(GlobConst.LOG_TAG, "fourTitles.add(nextTitle) ");
 									fourTitles.add(nextTitle);
 									allTitleCont.remove(nextTitlePosition);
 							}
@@ -174,19 +163,7 @@ public class QuizeGame {
 			String buffer=fourTitles.get(correctTitlePosition);
 			fourTitles.set(correctTitlePosition, fourTitles.get(0));
 			fourTitles.set(0, buffer);
-					
-					
-			
-			
-			
-			Log.d(GlobConst.LOG_TAG, "-----------  correct title: "+correctTitleInRandomTitles);
-
-		
-		
-		for (String string : fourTitles) {
-			Log.d(GlobConst.LOG_TAG, "-----------  four title: "+string);
-		}
-		
+	
 		return fourTitles;
 	}
 	

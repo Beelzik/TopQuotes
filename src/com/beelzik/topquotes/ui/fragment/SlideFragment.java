@@ -1,36 +1,11 @@
 package com.beelzik.topquotes.ui.fragment;
 
-import java.util.List;
-import java.util.Random;
-
-import com.beelzik.topquotes.GlobConst;
-import com.beelzik.topquotes.R;
-import com.beelzik.topquotes.data.QuoteData;
-import com.beelzik.topquotes.data.UserData;
-import com.beelzik.topquotes.parse.FindQuotesCallback;
-import com.beelzik.topquotes.parse.FindRandomQuoteCallback;
-import com.beelzik.topquotes.parse.OnQuoteLikedCallback;
-import com.beelzik.topquotes.parse.ParseQuoteDataManager;
-import com.beelzik.topquotes.ui.activity.QuoteAutorActivity;
-import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
-import com.beelzik.topquotes.util.AnimateFirstDisplayListener;
-import com.beelzik.topquotes.util.ShareQuoteUtil;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.parse.CountCallback;
-import com.parse.FindCallback;
-import com.parse.ParseException;
-
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,6 +13,22 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.beelzik.topquotes.GlobConst;
+import com.beelzik.topquotes.R;
+import com.beelzik.topquotes.parse.callback.FindRandomQuoteCallback;
+import com.beelzik.topquotes.parse.callback.OnQuoteLikedCallback;
+import com.beelzik.topquotes.parse.data.QuoteData;
+import com.beelzik.topquotes.parse.data.UserData;
+import com.beelzik.topquotes.ui.activity.QuoteAutorActivity;
+import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
+import com.beelzik.topquotes.util.AnimateFirstDisplayListener;
+import com.beelzik.topquotes.util.NetConnectionRespondent;
+import com.beelzik.topquotes.util.ShareQuoteUtil;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 public class SlideFragment extends Fragment{
 	 static final String ARGUMENT_PAGE_NUMBER = "arg_page_number";
@@ -62,14 +53,14 @@ public class SlideFragment extends Fragment{
 	  SharedPreferences sp;
 	  
 	int langFlag;
-	ParseQuoteDataManager parseQuoteDataManager;
+	
 	protected ImageLoader imageLoader;
 	DisplayImageOptions options;
 	private ImageLoadingListener animateFirstListener;
 	  
-	  public SlideFragment(ParseQuoteDataManager parseQuoteDataManager) {
+	  public SlideFragment() {
 		 
-		  this.parseQuoteDataManager=parseQuoteDataManager;
+		 
 		  options = new DisplayImageOptions.Builder()
 			.showImageOnLoading(R.drawable.ic_stub)
 			.showImageForEmptyUri(R.drawable.ic_empty)
@@ -85,8 +76,8 @@ public class SlideFragment extends Fragment{
 	  }
 	  
 
-	  public static SlideFragment newInstance(int page, ParseQuoteDataManager parseQuoteDataManager) {
-		SlideFragment pageFragment = new SlideFragment(parseQuoteDataManager);
+	  public static SlideFragment newInstance(int page) {
+		SlideFragment pageFragment = new SlideFragment();
 	    Bundle arguments = new Bundle();
 	    arguments.putInt(ARGUMENT_PAGE_NUMBER, page);
 	    pageFragment.setArguments(arguments);
@@ -140,7 +131,8 @@ public class SlideFragment extends Fragment{
 		
 		@Override
 		public void onClick(final View v) {
-			parseQuoteDataManager.likeQuoteInParse(v, quote,  new OnQuoteLikedCallback() {
+			if(NetConnectionRespondent.checkNetConection(getActivity())){
+			QuoteData.likeQuoteInParse(v, quote,  new OnQuoteLikedCallback() {
 				
 				@Override
 				public void onQuoteLikedCallback(View view, boolean isLiked) {
@@ -153,6 +145,7 @@ public class SlideFragment extends Fragment{
 					
 				}
 			});
+			}
 		}
 	  });
 	    return view;
@@ -164,7 +157,7 @@ public class SlideFragment extends Fragment{
 		
 		langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		FindSlideQuoteCallback callback=new FindSlideQuoteCallback();
-		parseQuoteDataManager.findRandomQuote(langFlag, callback);
+		QuoteData.findRandomQuote(getActivity(),langFlag, callback);
 		
 		
 		 // ivSlideUserWut;
@@ -185,7 +178,7 @@ public class SlideFragment extends Fragment{
 					  tvSlideUserWut.setText(quote.getUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
 					  imageLoader.displayImage(quote.getUser().getString(UserData.COLUMN_USER_AVATA_URL),
 								ivSlideUserWut, options, animateFirstListener);
-					  parseQuoteDataManager.checkQuoteLikeStatus(ibtnSlideLike,quote,0);
+					 QuoteData.checkQuoteLikeStatus(getActivity(),ibtnSlideLike,quote,0);
 				
 			}else{
 				

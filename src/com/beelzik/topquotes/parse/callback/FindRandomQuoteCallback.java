@@ -1,8 +1,6 @@
-package com.beelzik.topquotes.parse;
+package com.beelzik.topquotes.parse.callback;
 
-import java.util.List;
-
-import com.beelzik.topquotes.data.QuoteData;
+import com.beelzik.topquotes.parse.data.QuoteData;
 
 public interface FindRandomQuoteCallback {
 

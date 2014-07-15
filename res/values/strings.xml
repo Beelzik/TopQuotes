@@ -43,7 +43,7 @@
   		<string name="add_quote_dlg_thanks_btn_cancel">No</string>
   		<string name="add_quote_dlg_thanks_btn_ok">Yes, add one more</string>
   		
-  		<string name="add_quote_dlg_conf_fail_input">Field of the title name and quote must be filled</string>
+  		<string name="add_quote_dlg_conf_fail_input">all field must be filled</string>
   		
   		<string name="list_stream_lb_num_season">"Seasone: "</string>
   		

@@ -23,6 +23,7 @@
   	</string-array>
   		<string name="action_add_quote">Add new quote</string>
   		<string name="add_quote_sp_title_Enter_title">Enter title</string>
+  			<string name="add_quote_sp_title_selected_title">Selected title: </string>
   		<string name="add_quote_lb_title">Title name*:</string>
   		<string name="add_quote_ed_title_hint">Enter full title name</string>
   		<string name="add_quote_lb_text">Quote text*:</string>

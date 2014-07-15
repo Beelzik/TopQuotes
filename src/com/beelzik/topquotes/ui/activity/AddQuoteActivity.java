@@ -53,6 +53,9 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 	
 	String spDefaultValue;
 	
+	String edHintTitleNameSelected;
+	String edHintTitleNameEnter;
+	
 	int nonTitleItemsLangth;
 	ArrayList<String> defTitleList;
 	ArrayList<String> curTitleList;
@@ -62,6 +65,10 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 		setContentView(R.layout.activity_add_quote);
 		
 		curTitleList=new ArrayList<String>();
+		
+		
+		edHintTitleNameEnter=getString(R.string.add_quote_sp_title_Enter_title);
+		edHintTitleNameSelected=getString(R.string.add_quote_sp_title_selected_title);
 		
 		checkedLaguages=getResources().getStringArray(R.array.check_languages);
 		spDefaultValue=getString(R.string.add_quote_sp_title_Enter_title);
@@ -99,8 +106,10 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 					int position, long id) {
 				if(position==0){
 					edAddQuoteTitleName.setEnabled(true);
+					edAddQuoteTitleName.setHint(edHintTitleNameEnter);
 				}else{
 					edAddQuoteTitleName.setEnabled(false);
+					edAddQuoteTitleName.setHint(edHintTitleNameSelected+"  "+titlesAdapter.getItem(position));
 				}
 			}
 

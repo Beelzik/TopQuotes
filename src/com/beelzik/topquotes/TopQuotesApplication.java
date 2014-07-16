@@ -36,8 +36,7 @@ public class TopQuotesApplication extends Application  {
 		ParseObject.registerSubclass(QuoteData.class);
 		  Parse.enableLocalDatastore(this);
 			 Parse.initialize(this,PARSE_APPLICATION_ID, PARSE_CLIENT_KEY);
-			  
-	  PushService.setDefaultPushCallback(this, MainActivity.class);
+			 
 	  ParseInstallation.getCurrentInstallation().saveInBackground();
 			  
 			   ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext())

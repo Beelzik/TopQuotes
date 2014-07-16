@@ -107,6 +107,8 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 			holder= new ViewHolder();
 			holder.tvListQuote= (TextView) view.findViewById(R.id.tvLisStreamQuote);
 			holder.tvListSerialName= (TextView) view.findViewById(R.id.tvListStreamSerialName);
+			holder.tvListLbNumSeason=(TextView) view.findViewById(R.id.tvListStreamlbNumSeason);
+			holder.tvListLbNumSeries=(TextView) view.findViewById(R.id.tvListStreamlbNumSeries);
 			holder.tvListNumSeason=(TextView) view.findViewById(R.id.tvListStreamNumSeason);
 			holder.tvListNumSeries=(TextView) view.findViewById(R.id.tvListStreamNumSeries);
 			holder.tvListUserWut=(TextView) view.findViewById(R.id.tvListUserWut);
@@ -123,8 +125,22 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 		
 		holder.tvListQuote.setText(quote.getQuote());
 		holder.tvListSerialName.setText(quote.getTitle().getTitleName());
-		holder.tvListNumSeason.setText(quote.getSeason()+"");
-		holder.tvListNumSeries.setText(quote.getEpisode()+"");
+		if (quote.getSeason()==-1) {
+			holder.tvListNumSeason.setText("");
+			holder.tvListLbNumSeason.setVisibility(View.GONE);
+		}else{
+			holder.tvListNumSeason.setText(quote.getSeason()+"");
+			holder.tvListLbNumSeason.setVisibility(View.VISIBLE);
+		}
+		
+		if (quote.getEpisode()==-1) {
+			holder.tvListNumSeries.setText("");
+			holder.tvListLbNumSeries.setVisibility(View.GONE);
+		}else{
+			holder.tvListNumSeries.setText(quote.getEpisode()+"");
+			holder.tvListLbNumSeries.setVisibility(View.VISIBLE);
+		}
+		
 		holder.tvListUserWut.setText(quote.getUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
 		
 		holder.ibtnListShare.setOnClickListener(new QuoteOnClick(view,position) {
@@ -221,6 +237,8 @@ public class QuotesStreamListAdapter extends BaseAdapter implements OnQuoteLiked
 		TextView tvListSerialName;
 		TextView tvListNumSeason;
 		TextView tvListNumSeries;
+		TextView tvListLbNumSeason;
+		TextView tvListLbNumSeries;
 		TextView tvListUserWut;
 		ImageButton ibtnListShare;
 		ImageButton ibtnListStreamLike;

@@ -67,7 +67,7 @@ public class QuoteData extends ParseObject{
 	}
 	
 	public int getSeason(){
-		return super.getInt(COLUMN_QUOTE_LANGUAGE);
+		return super.getInt(COLUMN_QUOTE_SEASON);
 	}
 	
 	public String getQuote(){
@@ -100,7 +100,7 @@ public class QuoteData extends ParseObject{
 	}
 	
 	public void putSeason(int season){
-		super.put(COLUMN_QUOTE_LANGUAGE,season);
+		super.put(COLUMN_QUOTE_SEASON,season);
 	}
 	
 	public void putQuote(String quote){

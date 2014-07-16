@@ -7,6 +7,8 @@ import android.content.IntentSender.SendIntentException;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -29,6 +31,17 @@ OnConnectionFailedListener {
 	Activity activity;
 	GooglePlusClientListener googlePlusClientListener;
 	OnUserAuthListener authListener;
+	
+	Handler handler=new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			if (!plusClient.isConnected()) {
+				plusClient.disconnect();
+				plusClient.connect();
+			}
+			super.handleMessage(msg);
+		}
+	};
 	
 	ProgressDialog mConnectionProgressDialog;
 	
@@ -60,6 +73,11 @@ OnConnectionFailedListener {
 	public void googlePlusSignIn(){
 		mConnectionProgressDialog.show();
 		plusClient.connect();
+		handler.sendEmptyMessageDelayed(0, 1000);
+		Log.d(GlobConst.LOG_TAG,"plusClient.isConnected() "+plusClient.isConnected());
+		Log.d(GlobConst.LOG_TAG,"plusClient.isConnecting() "+plusClient.isConnecting());
+		Log.d(GlobConst.LOG_TAG,"plusClient: "+plusClient);
+		Log.d(GlobConst.LOG_TAG,"googlePlusSignIn");
 	}
 	
 	public void googlePlusSignOut(){
@@ -71,7 +89,10 @@ OnConnectionFailedListener {
 	}
 	
 	public void goolePlusDisconnect(){
-		plusClient.disconnect();
+		if (plusClient.isConnected()) {
+			plusClient.disconnect();
+		}
+		
 	}
 	
 	@Override
@@ -80,14 +101,26 @@ OnConnectionFailedListener {
 			try {
 				result.startResolutionForResult(activity, REQUEST_CODE_RESOLVE_ERR);
 			} catch (SendIntentException e) {
+				
+				Log.d(GlobConst.LOG_TAG,"onConnectionFailed e: "+e.getMessage());
+				
 				plusClient.connect();
 			}
+		}else{
+			Log.d(GlobConst.LOG_TAG,"result.hasResolution() ");
+			plusClient.connect();
 		}
 	}
 
+	
+	
 	@Override
 	public void onConnected(Bundle connectionHint) {
 
+		if (GlobConst.DEBUG) {
+			Log.d(GlobConst.LOG_TAG,"onConnected  plusClient");
+		}
+		
 		String accountName = plusClient.getAccountName();
 		Person person=plusClient.getCurrentPerson();
 		String userDisplayName=person.getDisplayName();
@@ -102,7 +135,7 @@ OnConnectionFailedListener {
 
 		Editor editor=sp.edit();
 		editor.putBoolean(GlobConst.SP_FLAG_USER_IS_LOGIN, true);
-		editor.commit();
+		editor.commit();   
 		
 		if (GlobConst.DEBUG) {
 			Log.d(GlobConst.LOG_TAG," accountName: "+accountName+
@@ -121,6 +154,7 @@ OnConnectionFailedListener {
 		
 	}
 
+	
 	
 	
 	@Override

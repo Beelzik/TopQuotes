@@ -259,22 +259,34 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 	
 				
 				int lang=spAddQuoteLanguage.getSelectedItemPosition();
-				
+				int episode;
+				int season;
 				ParseUser user=ParseUser.getCurrentUser();
 				
 				boolean isTitleNameFilled=!titleName.equals("");
 				boolean isTitlQuoteFilled=!titleQuote.equals("");
 				boolean isSeasonFilled=(!edAddQuoteNumSeason.getText().toString().equals(""));
-				boolean isEpisode=(!edAddQuoteNumSeries.getText().toString().equals(""));
+				boolean isEpisodeFilled=(!edAddQuoteNumSeries.getText().toString().equals(""));
 				
 				boolean isUserNotNull=(user!=null);
 				
-				boolean canAdd=isTitleNameFilled && isTitlQuoteFilled && isSeasonFilled && isEpisode && isUserNotNull;
+				if (!isSeasonFilled) {
+					season=-1;
+				}else{
+					season=Integer.parseInt(edAddQuoteNumSeason.getText().toString());
+				}
+				
+				if (!isEpisodeFilled) {
+					episode=-1;
+				}else{
+					episode=Integer.parseInt(edAddQuoteNumSeries.getText().toString());
+				}
+				
+				boolean canAdd=isTitleNameFilled && isTitlQuoteFilled && isUserNotNull;
 				
 				Log.d(GlobConst.LOG_TAG,"canAdd: "+canAdd);
 				if(canAdd){
-					int season=Integer.parseInt(edAddQuoteNumSeason.getText().toString());
-					int episode=Integer.parseInt(edAddQuoteNumSeries.getText().toString());
+					
 					
 					String userDisplayName=user.getString(UserData.COLUMN_USER_NAME_DISPLAY);
 					if (userDisplayName!=null) {

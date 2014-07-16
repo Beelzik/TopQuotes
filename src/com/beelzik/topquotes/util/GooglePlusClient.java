@@ -70,6 +70,12 @@ OnConnectionFailedListener {
 		this.authListener = authListener;
 	}
 	
+	public void googlePlusConnect(){
+		if (plusClient!=null) {
+			plusClient.connect();
+		}
+	}
+	
 	public void googlePlusSignIn(){
 		mConnectionProgressDialog.show();
 		plusClient.connect();

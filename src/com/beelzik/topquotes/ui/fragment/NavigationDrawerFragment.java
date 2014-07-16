@@ -36,7 +36,6 @@ import com.beelzik.topquotes.parse.data.TitleData;
 import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
 import com.beelzik.topquotes.ui.activity.AddQuoteActivity;
-import com.beelzik.topquotes.ui.activity.ProfileActivity;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
 
 
@@ -282,11 +281,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
              Intent intent=new Intent(getActivity(), AddQuoteActivity.class);
              startActivity(intent);
         	 return true;
-        case R.id.action_profile:
-        	
-        	startActivity(new Intent(getActivity(), ProfileActivity.class));
-       	 
-       	 return true;
+ 
         default:
         	break;
         }

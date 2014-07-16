@@ -273,7 +273,7 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				if (!isSeasonFilled) {
 					season=-1;
 				}else{
-					season=Integer.parseInt(edAddQuoteNumSeason.getText().toString());
+					season=Integer.parseInt(replaceUnnecessaryZerro(edAddQuoteNumSeason.getText().toString()));
 				}
 				
 				if (!isEpisodeFilled) {
@@ -309,6 +309,11 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				break;
 			}
 		}
+	}
+	
+	private String replaceUnnecessaryZerro(String num){
+		num=num.replaceAll("^0*", "");
+		return num;
 	}
 	
 	private class ThanksDialogListener implements android.content.DialogInterface.OnClickListener{

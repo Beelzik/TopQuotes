@@ -24,6 +24,7 @@ import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
 import com.beelzik.topquotes.ui.fragment.PagerFragment;
+import com.beelzik.topquotes.ui.fragment.ProfileFragment;
 import com.beelzik.topquotes.ui.fragment.QuizFragment;
 import com.beelzik.topquotes.ui.fragment.QuoteStreamFragment;
 import com.beelzik.topquotes.ui.fragment.NavigationDrawerFragment;
@@ -96,6 +97,10 @@ public class MainActivity extends ActionBarActivity implements
 			PagerFragment pagerFragment= PagerFragment.newInstance(position);
 			
 			replaceFragment(pagerFragment);
+		case 4:
+			ProfileFragment profileFragment= ProfileFragment.newInstance(position);
+			
+			replaceFragment(profileFragment);	
 			break;
 		default:
 			TitleQuotesFragment titleQuotesFragment=TitleQuotesFragment.newInstance(position);

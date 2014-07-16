@@ -84,6 +84,7 @@ SignInButton signIn;
 	public void onUserAuth() {
 		Log.d(GlobConst.LOG_TAG,"onUserAuth()");
 		startActivity(new Intent(this, MainActivity.class));
+		finish();
 	}
 
 	

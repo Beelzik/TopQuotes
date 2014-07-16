@@ -12,5 +12,5 @@
     <dimen name="quiz_layout_panding">5dp</dimen>
     <dimen name="dialog_quize_panding">20dp</dimen>
     <dimen name="dialog_quize_top_panding">10dp</dimen>
-
+    <dimen name="profile_photo_land_size">250dp</dimen>
 </resources>

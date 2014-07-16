@@ -211,6 +211,7 @@ int dimen dialog_fixed_width_minor 0x7f0b0012
 int dimen dialog_quize_panding 0x7f0b0019
 int dimen dialog_quize_top_panding 0x7f0b001a
 int dimen navigation_drawer_width 0x7f0b0017
+int dimen profile_photo_land_size 0x7f0b001b
 int dimen quiz_layout_panding 0x7f0b0018
 int drawable abc_ab_bottom_solid_dark_holo 0x7f020000
 int drawable abc_ab_bottom_solid_light_holo 0x7f020001

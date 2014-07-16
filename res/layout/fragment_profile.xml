@@ -7,8 +7,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="2" >
+        android:layout_height="wrap_content" >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -16,12 +15,9 @@
 
             <ImageView
                 android:id="@+id/ivProfileAvatar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_width="@dimen/profile_photo_land_size"
+                android:layout_height="@dimen/profile_photo_land_size"
                 android:adjustViewBounds="true"
-                android:maxHeight="200dp"
-                android:maxWidth="200dp"
                 android:src="@drawable/ic_test_av" />
 
             <LinearLayout

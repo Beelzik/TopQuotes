@@ -1350,6 +1350,7 @@ containing a value of this type.
     
          */
         public static final int navigation_drawer_width=0x7f0b0017;
+        public static final int profile_photo_land_size=0x7f0b001b;
         public static final int quiz_layout_panding=0x7f0b0018;
     }
     public static final class drawable {

@@ -119,21 +119,19 @@ public class QuoteAutorActivity extends ActionBarActivity implements OnNavigatio
 	}
 	
 	public void findQuotes(){
-		QuoteData.findUserQuotes(this,20,0,userId, langFlag, new FindQuotesCallback() {
+		QuoteData.findUserQuotes(this,GlobConst.QUITES_TO_LOADE,0,userId, langFlag, new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
 					if(FindQuotesCallback.FIND_RESULT_OK==resultCode){
 						
-						for (QuoteData quoteData : quotesList) {
-							Log.d(GlobConst.LOG_TAG, "autor quote: "+quoteData.getObjectId());
-						}
+						
 						quotesStreamListAdapter.clean();
 						quotesStreamListAdapter.addAll(quotesList);
 						quotesStreamListAdapter.notifyDataSetChanged();
 						
 						OnUserQuoteScrollListener scrollListener=
-								new OnUserQuoteScrollListener(QuoteAutorActivity.this,20, userId, sp, quotesStreamListAdapter);
+								new OnUserQuoteScrollListener(QuoteAutorActivity.this,GlobConst.QUITES_TO_LOADE, userId, sp, quotesStreamListAdapter);
 						lvAutor.setOnScrollListener(scrollListener);
 					
 					}

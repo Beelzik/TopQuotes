@@ -329,7 +329,7 @@ public static void addQuoteInParse(final String quote,String titleName,final int
 			
 			if (!haveNetConnection) {
 				query.fromPin(pinTag);
-				Log.d(GlobConst.LOG_TAG, "!haveNetCon query.fromPin: "+pinTag);
+				
 			}
 		
 			

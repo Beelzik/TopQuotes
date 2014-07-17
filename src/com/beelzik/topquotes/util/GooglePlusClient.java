@@ -79,11 +79,8 @@ OnConnectionFailedListener {
 	public void googlePlusSignIn(){
 		mConnectionProgressDialog.show();
 		plusClient.connect();
-		handler.sendEmptyMessageDelayed(0, 1000);
-		Log.d(GlobConst.LOG_TAG,"plusClient.isConnected() "+plusClient.isConnected());
-		Log.d(GlobConst.LOG_TAG,"plusClient.isConnecting() "+plusClient.isConnecting());
-		Log.d(GlobConst.LOG_TAG,"plusClient: "+plusClient);
-		Log.d(GlobConst.LOG_TAG,"googlePlusSignIn");
+	handler.sendEmptyMessageDelayed(0, 1000);
+	
 	}
 	
 	public void googlePlusSignOut(){
@@ -113,7 +110,7 @@ OnConnectionFailedListener {
 				plusClient.connect();
 			}
 		}else{
-			Log.d(GlobConst.LOG_TAG,"result.hasResolution() ");
+			
 			plusClient.connect();
 		}
 	}

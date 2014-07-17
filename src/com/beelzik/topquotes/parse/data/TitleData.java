@@ -142,7 +142,9 @@ public class TitleData extends ParseObject{
 					@Override
 					public void done(ParseException e) {
 						if (e==null) {
-							Log.d(GlobConst.LOG_TAG, "Data pinned at locale by tag: "+tag);
+							if (GlobConst.DEBUG) {
+								Log.d(GlobConst.LOG_TAG, "Data pinned at locale by tag: "+tag);
+							}
 						}else{
 							Log.d(GlobConst.LOG_TAG, "Data DIDNT pinned at locale");
 						}

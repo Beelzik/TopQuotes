@@ -54,13 +54,13 @@ public class PagerFragment extends Fragment  implements RefreshQuoteListener{
 
 		      @Override
 		      public void onPageSelected(int position) {
-		        Log.d(GlobConst.LOG_TAG, "onPageSelected, position = " + position);
+		       
 		      }
 
 		      @Override
 		      public void onPageScrolled(int position, float positionOffset,
 		          int positionOffsetPixels) {
-		    	  Log.d(GlobConst.LOG_TAG, "onPageScrolled, position = " + position+" ,positionOffset: "+positionOffset);
+		  
 		      }
 
 		      @Override

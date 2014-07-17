@@ -138,12 +138,9 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 						titlesAdapter.clear();
 						titlesAdapter.add(spDefaultValue);
 						
-						Log.d(GlobConst.LOG_TAG,"curTitleList.size(): "
-								+curTitleList.size());
+						
 						
 						for (String titleName : titleNameList) {
-							Log.d(GlobConst.LOG_TAG,"titleName: "
-									+titleName);
 							titlesAdapter.add(titleName);
 						}	
 						
@@ -284,7 +281,7 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				
 				boolean canAdd=isTitleNameFilled && isTitlQuoteFilled && isUserNotNull;
 				
-				Log.d(GlobConst.LOG_TAG,"canAdd: "+canAdd);
+				
 				if(canAdd){
 					
 					

@@ -16,7 +16,7 @@ import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
 public class OnUserQuoteScrollListener implements OnScrollListener{
 	
 	int count;
-	int step=10;
+	int step=GlobConst.QUITES_LOADING_STEP;
 	
 	int pastTotalCount=0;
 	
@@ -47,7 +47,7 @@ public class OnUserQuoteScrollListener implements OnScrollListener{
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, final int totalItemCount) {
-		if(((firstVisibleItem+visibleItemCount)==totalItemCount) && pastTotalCount!=totalItemCount){
+		if(((firstVisibleItem+visibleItemCount+step)==totalItemCount) && pastTotalCount!=totalItemCount){
 			pastTotalCount=totalItemCount;
 	
 		    langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
@@ -59,16 +59,10 @@ public class OnUserQuoteScrollListener implements OnScrollListener{
 			public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
 				if(FindQuotesCallback.FIND_RESULT_OK==resultCode){
 					
-					for (QuoteData quoteData : quotesList) {
-						Log.d(GlobConst.LOG_TAG, "autor quote: "+quoteData.getObjectId());
-					}
-					Log.d(GlobConst.LOG_TAG, "autor quote.size(): "+quotesList.size());
+	
 					adapter.addAll(quotesList);
 					adapter.notifyDataSetChanged();
 					
-					
-					Log.d(GlobConst.LOG_TAG, "quotesStreamListAdapter.getCount(): "+adapter.getCount());
-					Log.d(GlobConst.LOG_TAG, "totalItemCount: "+totalItemCount);
 				}
 				
 			}

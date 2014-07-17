@@ -117,7 +117,7 @@ public class ProfileFragment extends Fragment implements RefreshQuoteListener, O
 		googlePlusClient=((TopQuotesApplication) getActivity().getApplication())
 				.getGooglePlusClient();
 		googlePlusClient.setActivity(getActivity());
-		googlePlusClient.googlePlusConnect();
+		//googlePlusClient.googlePlusConnect();
 		quotesStreamListAdapter= new QuotesStreamListAdapter(getActivity());
 		
 		checkedLaguages=getResources().getStringArray(R.array.check_languages);
@@ -184,7 +184,7 @@ public class ProfileFragment extends Fragment implements RefreshQuoteListener, O
 
 	@Override
 	public void refreshQuotes() {
-		Log.d(GlobConst.LOG_TAG, "refreshQuotes profile: ");
+	
 		findQuotes();
 		
 	}
@@ -198,21 +198,18 @@ public void findQuotes(){
 				tvProfilePublishedQuotes.setText(count+"");
 			}
 		});
-		QuoteData.findUserQuotes(getActivity(),20,0,userId, langFlag, new FindQuotesCallback() {
+		QuoteData.findUserQuotes(getActivity(),GlobConst.QUITES_TO_LOADE,0,userId, langFlag, new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
 					if(FindQuotesCallback.FIND_RESULT_OK==resultCode){
 						
-						for (QuoteData quoteData : quotesList) {
-							Log.d(GlobConst.LOG_TAG, "autor quote: "+quoteData.getLanguage());
-						}
+						
 						quotesStreamListAdapter.clean();
 						quotesStreamListAdapter.addAll(quotesList);
 						quotesStreamListAdapter.notifyDataSetChanged();
-						Log.d(GlobConst.LOG_TAG, "autor quote.size(): "+quotesList.size());
-						
-						OnUserQuoteScrollListener listener= new OnUserQuoteScrollListener(getActivity(),20, 
+					
+						OnUserQuoteScrollListener listener= new OnUserQuoteScrollListener(getActivity(),GlobConst.QUITES_TO_LOADE, 
 								userId,sp, quotesStreamListAdapter);
 						lvProfileQuotes.setOnScrollListener(listener);
 						

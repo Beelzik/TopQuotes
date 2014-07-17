@@ -100,7 +100,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         titleListHolder=((TopQuotesApplication) this.
 				getActivity().getApplication()).getTitleListHolder();
         
-       TitleListStorage.setTitleList(langFlag,navConstItemsList);
+     TitleListStorage.setTitleList(langFlag,navConstItemsList);
         
         
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
@@ -264,7 +264,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         if (mDrawerLayout != null && isDrawerOpen()) {
-            inflater.inflate(R.menu.global, menu);
+            
             showGlobalContextActionBar();
         }
         super.onCreateOptionsMenu(menu, inflater);
@@ -338,9 +338,8 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
   	  		Editor editor=sp.edit();
   	  		editor.putInt(GlobConst.SP_FLAG_WUT_LANG, position);
   	  		editor.commit();
-  	  		Log.d(GlobConst.LOG_TAG, "currentItemSelected: "+mCurrentSelectedPosition+" , new sel position: "+0);
   	  		
-  	  		//mDrawerListView.performItemClick(null, 0, 0);
+  	  		
   	  		
   	  		refreshNavigationTitleList(langFlag);
   	  		if (refreshQuoteListener!=null) {
@@ -368,10 +367,8 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
   			@Override
   			public void findTitleNameCallback(List<String> titleNameList, int resultCode) {
   				if (resultCode==FindTitlesNameCallback.FIND_RESULT_OK) {
-  					//navigationAdapter.clear();
   					
   					ArrayList<String> titleConteiner=new ArrayList<String>();
-  					///titleConteiner.addAll(navConstItems);
   					
   					for (int i = 0; i < navConstItems.length; i++) {
 						titleConteiner.add(navConstItems[i]); 
@@ -385,30 +382,16 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
   						navigationAdapter.remove(navigationAdapter.getItem(navConstItems.length));
 					}
   					
-  					
-  					/*for (String  navConstItem : navConstItems) {
-  						navigationAdapter.add(navConstItem);
-					}*/
+  				
   					
   					for (String titleName : titleNameList) {
   						titleConteiner.add(titleName);
   						navigationAdapter.add(titleName);
-  						Log.d(GlobConst.LOG_TAG, "title navigation name: "+titleName);
-					}
-  					
-  					for (int i = 0; i < navigationAdapter.getCount(); i++) {
-  						Log.d(GlobConst.LOG_TAG, "=====================title navigation name: "+navigationAdapter.getItem(i));
-						
-					}
-  					
-  					for (String string : titleConteiner) {
-  						Log.d(GlobConst.LOG_TAG, "/////////////---------title cont: "+string);
-					}
-  					/*for (String string : titleNameList) {
   						
-  						navigationAdapter.add(string);
-  					}*/
-  					titleListHolder.setTitleList(langFlag,titleConteiner);
+					}
+  					
+  					
+  						titleListHolder.setTitleList(langFlag,titleConteiner);
   					navigationAdapter.notifyDataSetChanged();
   				}
   				

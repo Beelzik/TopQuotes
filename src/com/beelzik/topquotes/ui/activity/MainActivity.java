@@ -79,7 +79,6 @@ public class MainActivity extends ActionBarActivity implements
 	public void onNavigationDrawerItemSelected(int position) {
 		switch(position){
 		case 0:
-			Log.d(GlobConst.LOG_TAG,"item 0 selected");
 			QuoteStreamFragment quoteStremFragment= QuoteStreamFragment.newInstance(position);
 			replaceFragment(quoteStremFragment);
 			
@@ -120,7 +119,7 @@ public class MainActivity extends ActionBarActivity implements
 	}
 	
 	public void onSectionAttached(int number, RefreshQuoteListener listener) {
-		ArrayList<String> titleList=TitleListStorage.getTitleList(langFlag);
+	ArrayList<String> titleList=TitleListStorage.getTitleList(langFlag);
 		mTitle=titleList.get(number);
 		mNavigationDrawerFragment.setRefreshQuoteListener(listener);
 		setRefreshQuoteListener(listener);
@@ -170,10 +169,7 @@ public class MainActivity extends ActionBarActivity implements
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			startActivity(new Intent(this, AuthActivity.class));
-			return true;
-		}
+		
 		
 		return super.onOptionsItemSelected(item);
 	}

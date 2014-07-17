@@ -237,7 +237,7 @@ public class QuizFragment extends Fragment implements OnClickListener, QuizeGame
 										downloadRecordsDialog.cancel();
 										createDialogProgressWithNet(topTenRecordsList, userTopRecord);
 										enableButtons();
-										Log.d(GlobConst.LOG_TAG, "FIND_RESULT_OK");
+									
 									}
 									
 								}	

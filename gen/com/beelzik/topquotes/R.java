@@ -1486,7 +1486,7 @@ containing a value of this type.
         public static final int powered_by_google_light=0x7f020081;
     }
     public static final class id {
-        public static final int action_add_quote=0x7f07009e;
+        public static final int action_add_quote=0x7f07009d;
         public static final int action_bar=0x7f07002e;
         public static final int action_bar_activity_content=0x7f070027;
         public static final int action_bar_container=0x7f07002d;
@@ -1498,7 +1498,6 @@ containing a value of this type.
         public static final int action_menu_divider=0x7f070028;
         public static final int action_menu_presenter=0x7f070029;
         public static final int action_mode_close_button=0x7f070036;
-        public static final int action_settings=0x7f07009d;
         public static final int activity_chooser_view_content=0x7f070037;
         public static final int always=0x7f07001e;
         public static final int beginning=0x7f070023;
@@ -1717,9 +1716,8 @@ containing a value of this type.
         public static final int support_simple_spinner_dropdown_item=0x7f030029;
     }
     public static final class menu {
-        public static final int global=0x7f0d0000;
-        public static final int main=0x7f0d0001;
-        public static final int quote_stream=0x7f0d0002;
+        public static final int main=0x7f0d0000;
+        public static final int quote_stream=0x7f0d0001;
     }
     public static final class string {
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 

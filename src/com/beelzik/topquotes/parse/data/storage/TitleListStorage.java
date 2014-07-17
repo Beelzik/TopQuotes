@@ -15,24 +15,30 @@ public class TitleListStorage{
 
 	
 	
-	static HashMap<Integer,ArrayList<String>> mapTileList;
+	public static volatile HashMap<Integer,ArrayList<String>> mapTileList;
 	SharedPreferences sp;
 	
 	FindTopTenAndUserRecordsCallback recordsCallback;
 	
 	
 	public TitleListStorage() {
-		mapTileList= new HashMap<Integer, ArrayList<String>>();
+	 mapTileList= new HashMap<Integer, ArrayList<String>>();
 	}
 	
 	public static void setTitleList(int langFlag,ArrayList<String> titleList) {
-		mapTileList.put(langFlag,titleList);
+		synchronized (TitleListStorage.class) {
+			mapTileList.put(langFlag,titleList);	
+		}
+		
 	}
 	
 	
 	public static ArrayList<String> getTitleList(int langFlag) {
 		return mapTileList.get(langFlag);
 	}
+	
+	
+
 	
 	
 }

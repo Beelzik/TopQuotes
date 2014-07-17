@@ -40,7 +40,6 @@ public class SplashActivity extends Activity{
 			super.handleMessage(msg);
 			switch(msg.what){
 			case HANDL_MSG_PARSE_INIT:
-				Log.d(GlobConst.LOG_TAG, "splash activity is user login: "+sp.getBoolean(GlobConst.SP_FLAG_USER_IS_LOGIN, false));
 				if(sp.getBoolean(GlobConst.SP_FLAG_USER_IS_LOGIN, false) && (ParseUser.getCurrentUser()!=null)){
 					startActivity(new Intent(SplashActivity.this, MainActivity.class));
 				}else{

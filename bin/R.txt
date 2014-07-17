@@ -343,7 +343,7 @@ int drawable ic_test_av 0x7f02007e
 int drawable ic_test_prof_avatar 0x7f02007f
 int drawable powered_by_google_dark 0x7f020080
 int drawable powered_by_google_light 0x7f020081
-int id action_add_quote 0x7f07009e
+int id action_add_quote 0x7f07009d
 int id action_bar 0x7f07002e
 int id action_bar_activity_content 0x7f070027
 int id action_bar_container 0x7f07002d
@@ -355,7 +355,6 @@ int id action_context_bar 0x7f07002f
 int id action_menu_divider 0x7f070028
 int id action_menu_presenter 0x7f070029
 int id action_mode_close_button 0x7f070036
-int id action_settings 0x7f07009d
 int id activity_chooser_view_content 0x7f070037
 int id always 0x7f07001e
 int id beginning 0x7f070023
@@ -546,9 +545,8 @@ int layout list_item_dialog_quize_record 0x7f030026
 int layout list_item_stream_quote 0x7f030027
 int layout list_item_title_navigation 0x7f030028
 int layout support_simple_spinner_dropdown_item 0x7f030029
-int menu global 0x7f0d0000
-int menu main 0x7f0d0001
-int menu quote_stream 0x7f0d0002
+int menu main 0x7f0d0000
+int menu quote_stream 0x7f0d0001
 int string abc_action_bar_home_description 0x7f050021
 int string abc_action_bar_up_description 0x7f050022
 int string abc_action_menu_overflow_description 0x7f050023

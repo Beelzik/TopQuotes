@@ -13,13 +13,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ListView;
+import android.widget.AbsListView.OnScrollListener;
 
 import com.beelzik.topquotes.GlobConst;
 import com.beelzik.topquotes.R;
 import com.beelzik.topquotes.parse.callback.FindQuotesCallback;
 import com.beelzik.topquotes.parse.data.QuoteData;
 import com.beelzik.topquotes.ui.activity.MainActivity;
+import com.beelzik.topquotes.ui.activity.listener.OnUserQuoteScrollListener;
 import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnLikeClickListener;
 import com.beelzik.topquotes.ui.adapter.OnQuotesListBtnShareClickListener;
 import com.beelzik.topquotes.ui.adapter.QuotesStreamListAdapter;
@@ -77,7 +80,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 		quotesAdapter=new QuotesStreamListAdapter(getActivity());
 		quotesAdapter.setBtnShareClickListener(this);
 		quotesAdapter.setBtnLikeClickListener(this);
-		//quotesAdapter.setIvAvatarClickListener(this);
+		
 		lvStreamQuotes.setAdapter(quotesAdapter);
 		
 		
@@ -99,14 +102,13 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 
 	@Override
 	public void refreshQuotes() {
-		Log.d(GlobConst.LOG_TAG,"QuoteStrem refreshQuotes() ");
 		
 		sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
 		langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
 		swStreamCont.setRefreshing(true);
 		
-		QuoteData.findAllLikedQuotes(getActivity(),20, 0, langFlag, new FindQuotesCallback() {
+		QuoteData.findAllLikedQuotes(getActivity(),GlobConst.QUITES_TO_LOADE, 0, langFlag, new FindQuotesCallback() {
 
 			@Override
 			public void findQuotesCallback(List<QuoteData> quotesList,
@@ -116,6 +118,10 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 					quotesAdapter.addAll(quotesList);
 					quotesAdapter.notifyDataSetChanged();
 					swStreamCont.setRefreshing(false);
+					
+					TopQuoteListScrollListener scrollListener=new TopQuoteListScrollListener(GlobConst.QUITES_TO_LOADE);
+					lvStreamQuotes.setOnScrollListener(scrollListener);
+					
 				}
 			}
 			
@@ -132,5 +138,45 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	@Override
 	public void onBtnLikeClickListener(View view, final int position) {
 
+	}
+	
+private class TopQuoteListScrollListener implements OnScrollListener{
+		
+		int count;
+		int step=GlobConst.QUITES_LOADING_STEP;
+		int langFlag;
+		
+		int pastTotalCount=0;
+		
+		
+		public TopQuoteListScrollListener(int count) {
+			this.count=count;
+		}
+		
+
+		@Override
+		public void onScrollStateChanged(AbsListView view, int scrollState) {
+		}
+
+		@Override
+		public void onScroll(AbsListView view, int firstVisibleItem,
+				int visibleItemCount, final int totalItemCount) {
+			if(((firstVisibleItem+visibleItemCount+step)==totalItemCount) && pastTotalCount!=totalItemCount){
+				pastTotalCount=totalItemCount;
+				langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
+				
+				QuoteData.findAllLikedQuotes(getActivity(),step, count, langFlag, new FindQuotesCallback() {
+					
+					@Override
+					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
+						quotesAdapter.addAll(quotesList);
+						quotesAdapter.notifyDataSetChanged();
+					}
+				});
+				
+				count+=step;
+			}
+		}
+		
 	}
 }

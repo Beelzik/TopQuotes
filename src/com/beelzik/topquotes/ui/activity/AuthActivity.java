@@ -54,7 +54,7 @@ SignInButton signIn;
 		
 		googlePlusClient.setActivity(this);
 		googlePlusClient.setOnAuthListener(this);
-		//googlePlusClient.setGooglePlusClientListener(this);
+		
 		signIn = (SignInButton) findViewById(R.id.sinBtnAuth);
 		
 		signIn.setOnClickListener(new OnClickListener() {
@@ -63,7 +63,7 @@ SignInButton signIn;
 			public void onClick(View v) {
 				googlePlusClient.goolePlusDisconnect();
 				googlePlusClient.googlePlusSignIn();
-				//Log.d(GlobConst.LOG_TAG, "logIn OK ");
+				
 			}
 		});
 	}
@@ -82,7 +82,7 @@ SignInButton signIn;
 
 	@Override
 	public void onUserAuth() {
-		Log.d(GlobConst.LOG_TAG,"onUserAuth()");
+		
 		startActivity(new Intent(this, MainActivity.class));
 		finish();
 	}

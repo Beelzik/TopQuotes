@@ -115,7 +115,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 		//scrollListener=new StreamScrollListener();
 		
 		
-		QuoteData.findAllTitlesQuotes(getActivity(),20,0,langFlag,new FindQuotesCallback() {
+		QuoteData.findAllTitlesQuotes(getActivity(),GlobConst.QUITES_TO_LOADE,0,langFlag,new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -125,7 +125,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 					quotesAdapter.notifyDataSetChanged();
 					swStreamCont.setRefreshing(false);
 					
-					QuoteStreamListScrollListener scrollListener=new QuoteStreamListScrollListener(20);
+					QuoteStreamListScrollListener scrollListener=new QuoteStreamListScrollListener(GlobConst.QUITES_TO_LOADE);
 					lvStreamQuotes.setOnScrollListener(scrollListener);
 				}
 				}
@@ -149,7 +149,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 	private class QuoteStreamListScrollListener implements OnScrollListener{
 		
 		int count;
-		int step=10;
+		int step=GlobConst.QUITES_LOADING_STEP;
 		int langFlag;
 		
 		int pastTotalCount=0;
@@ -167,7 +167,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem,
 				int visibleItemCount, final int totalItemCount) {
-			if(((firstVisibleItem+visibleItemCount)==totalItemCount) && pastTotalCount!=totalItemCount){
+			if(((firstVisibleItem+visibleItemCount+step)==totalItemCount) && pastTotalCount!=totalItemCount){
 				pastTotalCount=totalItemCount;
 				langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 				
@@ -177,7 +177,7 @@ RefreshQuoteListener, OnRefreshListener, OnQuotesListBtnLikeClickListener{
 					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
 						quotesAdapter.addAll(quotesList);
 						quotesAdapter.notifyDataSetChanged();
-						Log.d(GlobConst.LOG_TAG, "quotesStreamListAdapter.getCount(): "+quotesAdapter.getCount());
+						
 					}
 				});
 				

@@ -118,11 +118,12 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 	    langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
 		swTitleCont.setRefreshing(true);
-
+		
+		
 		titleName=titleListHolder.getTitleList(langFlag).get(wutFragment);
 		
 		Log.d(GlobConst.LOG_TAG,"cur title name: "+titleName);
-		QuoteData.findTitleQuotes(getActivity(),20,0,titleName,langFlag,new FindQuotesCallback() {
+		QuoteData.findTitleQuotes(getActivity(),GlobConst.QUITES_TO_LOADE,0,titleName,langFlag,new FindQuotesCallback() {
 				
 				@Override
 				public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
@@ -132,7 +133,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 						quotesAdapter.notifyDataSetChanged();
 						swTitleCont.setRefreshing(false);
 						
-						QuoteTitleListScrollListener scrollListener=new QuoteTitleListScrollListener(20);
+						QuoteTitleListScrollListener scrollListener=new QuoteTitleListScrollListener(GlobConst.QUITES_TO_LOADE);
 						lvTitleQuotes.setOnScrollListener(scrollListener);
 					}
 				}
@@ -142,7 +143,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 	private class QuoteTitleListScrollListener implements OnScrollListener{
 		
 		int count;
-		int step=10;
+		int step=GlobConst.QUITES_LOADING_STEP;
 		int langFlag;
 		
 		int pastTotalCount=0;
@@ -159,7 +160,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem,
 				int visibleItemCount, final int totalItemCount) {
-			if(((firstVisibleItem+visibleItemCount)==totalItemCount) && pastTotalCount!=totalItemCount){
+			if(((firstVisibleItem+visibleItemCount+step)==totalItemCount) && pastTotalCount!=totalItemCount){
 				pastTotalCount=totalItemCount;
 				langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 				
@@ -177,7 +178,7 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 					public void findQuotesCallback(List<QuoteData> quotesList, int resultCode) {
 						quotesAdapter.addAll(quotesList);
 						quotesAdapter.notifyDataSetChanged();
-						Log.d(GlobConst.LOG_TAG, "quotesStreamListAdapter.getCount(): "+quotesAdapter.getCount());
+						
 					}
 				});
 				

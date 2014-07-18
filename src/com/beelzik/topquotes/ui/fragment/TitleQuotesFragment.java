@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -108,7 +109,10 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 
 	@Override
 	public void refreshQuotes() {
-		//((MainActivity) getActivity()).onNavigationDrawerItemSelected(0);
+		QuoteStreamFragment quoteStremFragment= QuoteStreamFragment.newInstance(0);
+		((MainActivity) getActivity()).replaceFragment(quoteStremFragment);
+		((MainActivity) getActivity()).getSupportActionBar().setTitle(getActivity().getResources().getStringArray(R.array.navigation_drawer_const_item)[0]);
+		
 	}
 
 	@Override

@@ -110,7 +110,7 @@ public class MainActivity extends ActionBarActivity implements
 		
 	}
 
-	private void replaceFragment(Fragment fragment){
+	public void replaceFragment(Fragment fragment){
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		fragmentManager
 				.beginTransaction()
@@ -119,8 +119,13 @@ public class MainActivity extends ActionBarActivity implements
 	}
 	
 	public void onSectionAttached(int number, RefreshQuoteListener listener) {
+		Log.d(GlobConst.LOG_TAG," onSectionAttached");
 	ArrayList<String> titleList=TitleListStorage.getTitleList(langFlag);
+	if (titleList!=null) {
+		Log.d(GlobConst.LOG_TAG," mTitle: "+mTitle);
 		mTitle=titleList.get(number);
+	}
+		
 		mNavigationDrawerFragment.setRefreshQuoteListener(listener);
 		setRefreshQuoteListener(listener);
 		

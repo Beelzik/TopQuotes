@@ -131,7 +131,7 @@ public class QuoteData extends ParseObject{
 		@Override
 		public void done(QuoteData object, ParseException e) {
 			
-		
+			
 				if(object!=null){
 					unlikeQuote(targetQuote, likedCallback, view);
 				}else{
@@ -180,7 +180,7 @@ private static void likeQuote(final QuoteData targetQuote,final OnQuoteLikedCall
 
 private static void unlikeQuote(final QuoteData targetQuote,final OnQuoteLikedCallback likedCallback, final View view){
 	ParseUser user=ParseUser.getCurrentUser();
-	ParseRelation<QuoteData> quoteLikedBy=user.getRelation(UserData.COLUMN_USER_RELATION);
+    ParseRelation<QuoteData> quoteLikedBy=user.getRelation(UserData.COLUMN_USER_RELATION);
 	ParseRelation<ParseUser> userLikes=targetQuote.getRelation(QuoteData.COLUMN_QUOTE_LIKES);
 	quoteLikedBy.remove(targetQuote);
 	userLikes.remove(user);

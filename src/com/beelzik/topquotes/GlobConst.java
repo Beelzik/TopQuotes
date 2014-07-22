@@ -10,5 +10,7 @@ public class GlobConst {
 	public static final String ARG_SECTION_FRAGMENT_NUMBER = "section_number";
 	public static final int QUITES_TO_LOADE=50;
 	public static final int QUITES_LOADING_STEP=25;
-
+	
+	public static final int DRAW_MENU_ITEM_MENU_POS=0;
+	public static final int DRAW_MENU_ITEM_TITLES_POS=6;
 }

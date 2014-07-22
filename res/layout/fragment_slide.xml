@@ -14,8 +14,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:text="TextView" />
+            android:layout_centerVertical="true" />
 
     </RelativeLayout>
 
@@ -30,7 +29,6 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:text="Large Text"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
     </RelativeLayout>
@@ -51,14 +49,13 @@
                 <ImageView
                     android:id="@+id/ivSlideUserAvatar"
                     android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:src="@drawable/ic_test_av" />
+                    android:layout_height="100dp" />
 
                 <TextView
                     android:id="@+id/tvSlideUserWut"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="TextView" />
+                    android:layout_height="wrap_content" />
+
             </LinearLayout>
 
             <ImageButton

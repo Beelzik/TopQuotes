@@ -78,28 +78,34 @@ public class MainActivity extends ActionBarActivity implements
 	@Override
 	public void onNavigationDrawerItemSelected(int position) {
 		switch(position){
-		case 0:
+		case GlobConst.DRAW_MENU_ITEM_MENU_POS:
+		
+			break;
+		case 1:
 			QuoteStreamFragment quoteStremFragment= QuoteStreamFragment.newInstance(position);
 			replaceFragment(quoteStremFragment);
 			
 			break;
-		case 1:
+		case 2:
 			QuizFragment quizFragment= QuizFragment.newInstance(position);
 			
 			replaceFragment(quizFragment);
 			break;
-		case 2:
+		case 3:
 			TopFavoritesFragment favoriteFragment= TopFavoritesFragment.newInstance(position);
 			replaceFragment(favoriteFragment);
 			break;
-		case 3:
-			PagerFragment pagerFragment= PagerFragment.newInstance(position);
-			
-			replaceFragment(pagerFragment);
 		case 4:
+			PagerFragment pagerFragment= PagerFragment.newInstance(position);	
+			replaceFragment(pagerFragment);
+			
+			break;
+		case 5:
 			ProfileFragment profileFragment= ProfileFragment.newInstance(position);
 			
 			replaceFragment(profileFragment);	
+			break;
+		case GlobConst.DRAW_MENU_ITEM_TITLES_POS:	
 			break;
 		default:
 			TitleQuotesFragment titleQuotesFragment=TitleQuotesFragment.newInstance(position);

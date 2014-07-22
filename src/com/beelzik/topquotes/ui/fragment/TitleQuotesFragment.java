@@ -109,9 +109,9 @@ public class TitleQuotesFragment extends Fragment implements OnQuotesListBtnShar
 
 	@Override
 	public void refreshQuotes() {
-		QuoteStreamFragment quoteStremFragment= QuoteStreamFragment.newInstance(0);
+		QuoteStreamFragment quoteStremFragment= QuoteStreamFragment.newInstance(1);
 		((MainActivity) getActivity()).replaceFragment(quoteStremFragment);
-		((MainActivity) getActivity()).getSupportActionBar().setTitle(getActivity().getResources().getStringArray(R.array.navigation_drawer_const_item)[0]);
+		((MainActivity) getActivity()).getSupportActionBar().setTitle(getActivity().getResources().getStringArray(R.array.navigation_drawer_const_item)[1]);
 		
 	}
 

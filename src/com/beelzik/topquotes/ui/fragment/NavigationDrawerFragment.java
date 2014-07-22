@@ -36,6 +36,8 @@ import com.beelzik.topquotes.parse.data.TitleData;
 import com.beelzik.topquotes.parse.data.storage.TitleListStorage;
 import com.beelzik.topquotes.ui.actionbar.mpdel.SpinnerNavItem;
 import com.beelzik.topquotes.ui.activity.AddQuoteActivity;
+import com.beelzik.topquotes.ui.adapter.DrawerAdapter;
+import com.beelzik.topquotes.ui.adapter.DrawerItem;
 import com.beelzik.topquotes.ui.adapter.TitleNavigationAdapter;
 
 
@@ -58,13 +60,13 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
     private ListView mDrawerListView;
     private View mFragmentContainerView;
 
-    private int mCurrentSelectedPosition = 0;
+    private int mCurrentSelectedPosition = 1;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
     
     private String[] navConstItems;
     
-    private ArrayList<String> navConstItemsList;
+  
     private TitleListStorage titleListHolder;
     
 	private String checkedLaguages[];
@@ -74,8 +76,10 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
 	SharedPreferences sp;
 	int langFlag;
 
+  
+    DrawerAdapter drawerAdapter;
+    ArrayList<DrawerItem> drawList;
     
-    ArrayAdapter<String> navigationAdapter;
     public NavigationDrawerFragment() {
     }
 
@@ -87,20 +91,34 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         langFlag=sp.getInt(GlobConst.SP_FLAG_WUT_LANG, GlobConst.DEFAULT_LANG_FLAG);
 		
-        navConstItemsList=new ArrayList<String>();
+        
+
+        drawList=new ArrayList<DrawerItem>();
+        
+      
         navConstItems=getResources().getStringArray(R.array.navigation_drawer_const_item);
-        for (String item : navConstItems) {
+        
+        for (int i = 0; i <  navConstItems.length; i++) {
         	if (GlobConst.DEBUG) {
-				Log.d(GlobConst.LOG_TAG,"item: "+item);
+				Log.d(GlobConst.LOG_TAG,"item: "+navConstItems[i]);
 			}
         	
-			navConstItemsList.add(item);
-		}
+			if(navConstItems[i].equalsIgnoreCase("Menu") || navConstItems[i].equalsIgnoreCase("Titles")){
+				 drawList.add(new DrawerItem(navConstItems[i]));
+			}else{
+				drawList.add(new DrawerItem(navConstItems[i], R.drawable.ic_test_av));
+			}
+				
+        }
+        
+        drawerAdapter= new DrawerAdapter(getActivity(),R.layout.drawer_item, drawList);
+       
+        
         
         titleListHolder=((TopQuotesApplication) this.
 				getActivity().getApplication()).getTitleListHolder();
         
-     TitleListStorage.setTitleList(langFlag,navConstItemsList);
+   //  TitleListStorage.setTitleList(langFlag,navConstItemsList);
         
         
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
@@ -120,9 +138,7 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
         setHasOptionsMenu(true);
     }
 
-   public ArrayAdapter<String> getTitleList(){
-	   return navigationAdapter;
-   }
+
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -141,13 +157,10 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
 			Log.d(GlobConst.LOG_TAG, "NavigationDrawerFragment onCreateView");
 		}
          
-        navigationAdapter=new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_1,
-                android.R.id.text1,
-                navConstItemsList);
        
-        mDrawerListView.setAdapter(navigationAdapter);
+       // mDrawerListView.setAdapter(navigationAdapter);
+        
+        mDrawerListView.setAdapter(drawerAdapter);
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         
         sp=PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -376,23 +389,15 @@ public class NavigationDrawerFragment extends Fragment implements ActionBar.OnNa
 					}
   					
   					
-  					int navItemLength=navigationAdapter.getCount();
-  					for (int i =navConstItems.length; i <navItemLength ; i++) {
-  						Log.d(GlobConst.LOG_TAG, "remove item: "+navigationAdapter.getItem(navConstItems.length));
-  						navigationAdapter.remove(navigationAdapter.getItem(navConstItems.length));
+  					
+  					drawerAdapter.removeAllTitle();
+  					for (String string : titleNameList) {
+						drawerAdapter.add(new DrawerItem(string,null));
+						titleConteiner.add(string);
 					}
-  					
-  				
-  					
-  					for (String titleName : titleNameList) {
-  						titleConteiner.add(titleName);
-  						navigationAdapter.add(titleName);
-  						
-					}
-  					
   					
   						titleListHolder.setTitleList(langFlag,titleConteiner);
-  					navigationAdapter.notifyDataSetChanged();
+  					drawerAdapter.notifyDataSetChanged();
   				}
   				
   				

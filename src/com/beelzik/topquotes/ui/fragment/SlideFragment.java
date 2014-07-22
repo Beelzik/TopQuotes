@@ -42,6 +42,8 @@ public class SlideFragment extends Fragment{
 	  TextView tvSlideQuote;
 	  TextView tvSlideTitle;
 	  TextView tvSlideSeason;
+	  TextView tvSlideLbSeason;
+	  TextView tvSlideLbEpisode;
 	  TextView tvSlideEpisode;
 	  TextView tvSlideUserWut;
 	  ImageView ivSlideUserWut;
@@ -98,6 +100,8 @@ public class SlideFragment extends Fragment{
 	  tvSlideQuote=(TextView) view.findViewById(R.id.tvSlideQuote);
 	  tvSlideTitle=(TextView) view.findViewById(R.id.tvSlideSerialName);
 	  tvSlideSeason=(TextView) view.findViewById(R.id.tvSlideNumSeason);
+	  tvSlideLbSeason=(TextView) view.findViewById(R.id.tvSlidelbNumSeason);
+	  tvSlideLbEpisode=(TextView) view.findViewById(R.id.tvSlidelbNumSeries);
 	  tvSlideEpisode=(TextView) view.findViewById(R.id.tvSlideNumSeries);
 	  tvSlideUserWut=(TextView) view.findViewById(R.id.tvSlideUserWut);
 	  ivSlideUserWut=(ImageView) view.findViewById(R.id.ivSlideUserAvatar);
@@ -173,7 +177,22 @@ public class SlideFragment extends Fragment{
 				SlideFragment.this.quote=quote;
 					 tvSlideQuote.setText(quote.getQuote());
 					  tvSlideTitle.setText(quote.getTitle().getTitleName());
+					  
+					  if(quote.getSeason()>0){
+					  tvSlideLbSeason.setVisibility(View.VISIBLE);
 					  tvSlideSeason.setText(quote.getSeason()+"");
+					  }else{
+						  tvSlideLbSeason.setVisibility(View.GONE);
+						  tvSlideSeason.setText("");
+					  }
+					  if(quote.getEpisode()>0){
+						  tvSlideLbEpisode.setVisibility(View.VISIBLE);
+						  tvSlideEpisode.setText(quote.getEpisode()+"");
+					  }else{
+						  tvSlideLbEpisode.setVisibility(View.GONE);
+						  tvSlideEpisode.setText("");
+					  }
+					  tvSlideLbEpisode.setVisibility(View.VISIBLE);
 					  tvSlideEpisode.setText(quote.getEpisode()+"");
 					  tvSlideUserWut.setText(quote.getUser().getString(UserData.COLUMN_USER_NAME_DISPLAY));
 					  imageLoader.displayImage(quote.getUser().getString(UserData.COLUMN_USER_AVATA_URL),

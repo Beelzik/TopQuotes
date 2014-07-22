@@ -48,8 +48,7 @@
             <ImageButton
                 android:id="@+id/ibtnListStreamLike"
                 android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@drawable/ic_like" />
+                android:layout_height="50dp" />
 
         </LinearLayout>
 

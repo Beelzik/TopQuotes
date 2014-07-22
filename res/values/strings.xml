@@ -7,12 +7,13 @@
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
     <string-array name="navigation_drawer_const_item">
-       
-        <item >&gt;&gt;&gt; Quote stream</item>
-        <item >&gt;&gt;&gt;	Quiz</item>
-        <item >&gt;&gt;&gt; Top favorites</item>
-        <item >&gt;&gt;&gt; Slide quote</item>
-         <item >&gt;&gt;&gt; Profile</item>
+       <item >Menu</item>
+        <item >Quote stream</item>
+        <item >Quiz</item>
+        <item >Top favorites</item>
+        <item >Slide quote</item>
+         <item >Profile</item>
+         <item >Titles</item>
     </string-array>
     <string name="progress_dialog_title">Connection</string>
   	<string name="progress_dialog_msg">Quotes loading</string>

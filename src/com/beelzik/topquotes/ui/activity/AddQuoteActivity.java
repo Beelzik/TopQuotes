@@ -262,21 +262,23 @@ public class AddQuoteActivity extends ActionBarActivity implements OnClickListen
 				
 				boolean isTitleNameFilled=!titleName.equals("");
 				boolean isTitlQuoteFilled=!titleQuote.equals("");
-				boolean isSeasonFilled=(!edAddQuoteNumSeason.getText().toString().equals(""));
-				boolean isEpisodeFilled=(!edAddQuoteNumSeries.getText().toString().equals(""));
+				String seasonTxt=replaceUnnecessaryZerro(edAddQuoteNumSeason.getText().toString());
+				String  episodeTxt=replaceUnnecessaryZerro(edAddQuoteNumSeries.getText().toString());
+				boolean isSeasonFilled=(!seasonTxt.equals(""));
+				boolean isEpisodeFilled=(!episodeTxt.equals(""));
 				
 				boolean isUserNotNull=(user!=null);
 				
 				if (!isSeasonFilled) {
 					season=-1;
 				}else{
-					season=Integer.parseInt(replaceUnnecessaryZerro(edAddQuoteNumSeason.getText().toString()));
+					season=Integer.parseInt(seasonTxt);
 				}
 				
 				if (!isEpisodeFilled) {
 					episode=-1;
 				}else{
-					episode=Integer.parseInt(edAddQuoteNumSeries.getText().toString());
+					episode=Integer.parseInt(episodeTxt);
 				}
 				
 				boolean canAdd=isTitleNameFilled && isTitlQuoteFilled && isUserNotNull;
